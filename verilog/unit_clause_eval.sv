@@ -1,29 +1,3 @@
-// 5 variables per clause, 1023 clauses
-
-// Partial SAT Evaluator
-module partial_sat_evaluator(
-    input           [4:0] unassign,
-    input           [4:0] clause_mask,
-    input           [4:0] assignment,
-    input           [4:0] clause_pole,
-    output logic    partial_sat    
-);
-    // Intermediate values that feed into the OR
-    // gate in the partial_sat module
-    logic [4:0] or_inputs;
-
-    // Since we're dealing with indiviual bits here, bitwise (&) and logical (&&)
-    // operators should be interchangable. For consistency, stick to bitwise.
-
-    // TODO: check if these should be nonblocking <= or assign statments
-    for(int i = 0; i < 5; i = i + 1) begin
-        assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & ~(assignment[i] & clause_pole[i])
-    end
-
-    // or_inputs is a packed array so this will OR all of the values in it
-    assign partial_sat = |or_inputs;
-
-endmodule
 
 // Unit Clause valuator
 module unit_clause_evaluator(
@@ -36,6 +10,7 @@ module unit_clause_evaluator(
     output logic    is_unit_clause
 );
     // Intermediate values that feed into the encoder
+    // gate in the partial_sat module
     logic [4:0] encoder_inputs;
     logic [2:0] mux_input;
 
@@ -64,6 +39,6 @@ module unit_clause_evaluator(
     assign is_unit_clause = mux_input && 3'b111 ? 0 : 1
 
     // Select the variable to be assigned
-    assign implied_variable = is_unit_clause ? 0 : variable[mux_input]
+    assign implied_variable = is_unit_clause ? variable[mux_input]
     assign new_assignment = is_unit_clause ? 0 : clause_pole[mux_input]
 endmodule
