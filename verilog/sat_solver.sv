@@ -61,9 +61,9 @@ module unit_clause_evaluator(
     end
     
     // Output if unit clause
-    assign is_unit_clause = mux_input && 3'b111 ? 0 : 1
+    assign is_unit_clause = mux_input && 3'b111 ? 0 : 1;
 
     // Select the variable to be assigned
-    assign implied_variable = is_unit_clause ? 0 : variable[mux_input]
-    assign new_assignment = is_unit_clause ? 0 : clause_pole[mux_input]
+    assign implied_variable = is_unit_clause ? 0 : variable[mux_input];
+    assign new_assignment = is_unit_clause ? 0 : clause_pole[mux_input];
 endmodule
