@@ -1,7 +1,7 @@
 // 5 variables per clause, 1023 clauses
 
 // Trace Table
-module trace_table (
+module trace_table #(
     parameter NUM_VARIABLE = 128,
     parameter VARIABLE_INDEXES = 8
 )
