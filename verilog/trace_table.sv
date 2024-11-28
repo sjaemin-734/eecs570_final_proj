@@ -26,7 +26,8 @@ module trace_table # (
     enum logic {
         IDLE,
         POP,
-        PUSH
+        PUSH,
+        IDLE_TRANSITION,
     } state = IDLE;
 
     // data structure
@@ -37,16 +38,26 @@ module trace_table # (
         if (reset) begin
             counter <= COUNTER_RESET_VAL;
             state <= IDLE;
+            empty <= 1'b0;
         end else begin
             case (state)
                 IDLE: begin
                     done <= 1'b0;
                     last <= 1'b0;
                     if (pop) begin
-                        counter <= counter - 1;
-                        state <= POP;
+                        if (counter == 0) begin
+                            empty = 1'b1;
+                            done = 1'b1;
+                            state <= IDLE_TRANSITION;
+                        end else begin
+                            counter <= counter - 1;
+                            state <= POP;
+                        end
                     end
                     if (push) state <= PUSH;
+                end
+                IDLE_TRANSITION: begin
+                    state <= IDLE;
                 end
                 POP: begin
                     trace_stack[counter] <= [t_type, val, variable];
@@ -63,7 +74,11 @@ module trace_table # (
                         last <= 1'b1;
                         done <= 1'b1;
                         state <= IDLE;
-                    end else begin
+                    end else if (counter == 0) begin
+                        empty <= 1'b1;
+                        done <= 1'b1;
+                        state <= IDLE;
+                    end else
                         counter <= counter - 1;
                     end
                     
