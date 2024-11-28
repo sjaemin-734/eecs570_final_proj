@@ -1,9 +1,9 @@
 // 5 variables per clause, 1023 clauses
 
 // Trace Table
-module trace_table # (
-    paramter NUM_VARIABLE = 128,
-    paramter VARIABLE_INDEXES = 8
+module trace_table (
+    parameter NUM_VARIABLE = 128,
+    parameter VARIABLE_INDEXES = 8
 )
 (
     input                 clk,
@@ -40,7 +40,7 @@ module trace_table # (
             state <= IDLE;
             empty <= 1'b0;
         end else begin
-            case (state)
+            switch (state)
                 IDLE: begin
                     done <= 1'b0;
                     last <= 1'b0;
@@ -59,13 +59,13 @@ module trace_table # (
                 IDLE_TRANSITION: begin
                     state <= IDLE;
                 end
-                POP: begin
+                PUSH: begin
                     trace_stack[counter] <= [t_type, val, variable];
                     counter <= counter + 1;
                     done <= 1'b1;
                     state <= IDLE;
                 end
-                PUSH: begin
+                POP: begin
                     val_out <= trace_stack[counter][VARIABLE_INDEXES + 2];
                     type_out <= trace_stack[counter][VARIABLE_INDEXES + 1];
                     variable_out <= trace_stack[counter][VARIABLE_INDEXES:0];
@@ -83,8 +83,6 @@ module trace_table # (
                     end
                     
                 end
-            endcase
         end
-    end
 
 endmodule
