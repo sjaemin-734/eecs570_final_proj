@@ -66,11 +66,11 @@ module trace_table # (
                     state <= IDLE;
                 end
                 PUSH: begin
-                    val_out <= trace[stack][VARIABLE_INDEXES + 2];
-                    type_out <= trace[stack][VARIABLE_INDEXES + 1];
-                    variable_out <= trace[stack][VARIABLE_INDEXES:0];
+                    val_out <= trace_stack[counter][VARIABLE_INDEXES + 2];
+                    type_out <= trace_stack[counter][VARIABLE_INDEXES + 1];
+                    variable_out <= trace_stack[counter][VARIABLE_INDEXES:0];
                     done <= 1'b1;
-                    if (~trace[stack][VARIABLE_INDEXES + 1]) begin
+                    if (~trace_stack[VARIABLE_INDEXES + 1]) begin
                         last <= 1'b1;
                         done <= 1'b1;
                         state <= IDLE;
