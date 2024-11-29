@@ -1,88 +1,57 @@
 // 5 variables per clause, 1023 clauses
 
-// Trace Table
-module trace_table #(
+// Imply Stack
+module trace_table # (
     parameter NUM_VARIABLE = 128,
     parameter VARIABLE_INDEXES = 8
 )
 (
     input                 clk,
     input                 reset,
-    input                 push,
-    input                 pop,
-    input                 t_type,       // D=0/F=1
+    input                 en,
+    input                 rw,           // read/pop = 0, write/push = 1
+    input                 type_in,      // Decide = 0, Forced = 1 
     input                 val,          // Assigned to be T or F
     input           [8:0] variable,
-    output logic          last,         // whether its the last to come out during backpropagation
-    output logic          type_out,
-    output logic          val_out,
-    output logic    [8:0] variable_out,
-    output logic          empty,
-    output logic          done
+    output reg            type_out,     //Always 1
+    output reg            val_out,      
+    output reg      [8:0] variable_out,
+    output reg            empty
 );
     localparam bit [NUM_VARIABLE:0] COUNTER_RESET_VAL = 0;
-
-    // state logic
-    enum logic {
-        IDLE,
-        POP,
-        PUSH,
-        IDLE_TRANSITION,
-    } state = IDLE;
+    integer i;
 
     // data structure
-    reg [NUM_VARIABLE:0] counter;               // current index in stack
-    reg [NUM_VARIABLE:0][(VARIABLE_INDEXES+2):0] trace_stack;         // [type [1], val [1], variable index [8:0]]
+    reg [NUM_VARIABLE:0] counter;                               // current index in stack
+    reg [NUM_VARIABLE:0] stack[0:(VARIABLE_INDEXES+2)];         // [type [1],val [1], variable index [8:0]]
 
     always @(posedge clk) begin
-        if (reset) begin
-            counter <= COUNTER_RESET_VAL;
-            state <= IDLE;
-            empty <= 1'b0;
-        end else begin
-            switch (state)
-                IDLE: begin
-                    done <= 1'b0;
-                    last <= 1'b0;
-                    if (pop) begin
-                        if (counter == 0) begin
-                            empty = 1'b1;
-                            done = 1'b1;
-                            state <= IDLE_TRANSITION;
-                        end else begin
-                            counter <= counter - 1;
-                            state <= POP;
-                        end
-                    end
-                    if (push) state <= PUSH;
+        if (en == 0);
+        else begin
+            if (reset) begin
+                counter <= COUNTER_RESET_VAL;
+                empty <= 1'b1;
+                val_out <= 1'b0;
+                for (i = 0; i < NUM_VARIABLE; i=i+1) begin
+                    stack[i] = 0;
                 end
-                IDLE_TRANSITION: begin
-                    state <= IDLE;
-                end
-                PUSH: begin
-                    trace_stack[counter] <= [t_type, val, variable];
+            end else if (reset == 0) begin
+                empty <= counter == 0 ? 1'b1: 1'b0;
+                if (rw == 0 & ~empty) begin
+                    variable_out <= stack[counter - 1][NUM_VARIABLE:0]; 
+                    val_out <= stack[counter - 1][NUM_VARIABLE+1];
+                    type_out <= stack[counter - 1][NUM_VARIABLE+2];
+                    counter <= counter - 1;
+                end else if (rw == 1) begin
+                    stack[counter] <= [type_in, val, variable];
                     counter <= counter + 1;
-                    done <= 1'b1;
-                    state <= IDLE;
                 end
-                POP: begin
-                    val_out <= trace_stack[counter][VARIABLE_INDEXES + 2];
-                    type_out <= trace_stack[counter][VARIABLE_INDEXES + 1];
-                    variable_out <= trace_stack[counter][VARIABLE_INDEXES:0];
-                    done <= 1'b1;
-                    if (~trace_stack[VARIABLE_INDEXES + 1]) begin
-                        last <= 1'b1;
-                        done <= 1'b1;
-                        state <= IDLE;
-                    end else if (counter == 0) begin
-                        empty <= 1'b1;
-                        done <= 1'b1;
-                        state <= IDLE;
-                    end else
-                        counter <= counter - 1;
-                    end
-                    
-                end
+                
+            end
+            if ()  
+                
+            end
         end
+    end
 
 endmodule
