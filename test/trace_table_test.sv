@@ -1,39 +1,32 @@
 module trace_table_test;
 
-    // Inputs
-    logic                 clk;
-    logic                 reset;
-    logic                 push;
-    logic                 pop;
-    logic                 t_type;       // D=0/F=1
-    logic                 val;          // Assigned to be T or F
+    logic                                clock;
+    logic                                reset;
+    logic                                en;
+    logic                                rw;           // read/pop = 0, write/push = 1
+    logic                                type_in;      // Decide = 0, Forced = 1 
+    logic                                val;          // Assigned to be T or F
     logic           [8:0] variable;
-
-    // Outputs
-    logic          last;         // whether its the last to come out during backpropagation
-    logic          type_out;
-    logic          val_out;
-    logic    [8:0] variable_out;
-    logic          empty;
-    logic          done;
+    logic                                type_out;
+    logic                                val_out;     
+    logic           [8:0] variable_out;
+    logic                                empty;
 
     trace_table DUT(
         // Inputs
-        .clk(clk),
+        .clock(clock),
         .reset(reset),
-        .push(push),
-        .pop(pop),
-        .t_type(t_type),
+        .en(en),
+        .rw(rw),
+        .type_in(type_in),
         .val(val),
         .variable(variable),
 
         // Outputs
-        .last(last),
         .type_out(type_out),
         .val_out(val_out),
         .variable_out(variable_out),
-        .empty(empty),
-        .done(done)
+        .empty(empty)
     );
 
     always begin

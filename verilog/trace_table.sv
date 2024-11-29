@@ -6,7 +6,7 @@ module trace_table # (
     parameter VARIABLE_INDEXES = 8
 )
 (
-    input                                clk,
+    input                                clock,
     input                                reset,
     input                                en,
     input                                rw,           // read/pop = 0, write/push = 1
@@ -25,7 +25,7 @@ module trace_table # (
     logic [NUM_VARIABLE:0] counter;                               // current index in stack
     logic [NUM_VARIABLE:0] stack[0:(VARIABLE_INDEXES+2)];         // [type [1],val [1], variable index [8:0]]
 
-    always comb begin
+    always_comb begin
         if (en == 0);
         else begin
             if (reset) begin
