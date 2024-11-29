@@ -4,10 +4,12 @@ module conflict_detector_test;
     logic val_in; // Implied value
     logic clock;
     logic reset;
+    logic en;
 
     logic conflict;
     logic [8:0] var_idx_out;
     logic val_out;
+    logic imply_stack_push_en
 
 
     conflict_detector DUT(
@@ -15,10 +17,12 @@ module conflict_detector_test;
         .val_in(val_in), // Implied value
         .clock(clock),
         .reset(reset),
+        .en(en),
 
         .conflict(conflict),
         .var_idx_out(var_idx_out),
-        .val_out(val_out)
+        .val_out(val_out),
+        .imply_stack_push_en(imply_stack_push_en)
     );
 
     // Testbench clock

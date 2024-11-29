@@ -14,13 +14,12 @@ module conflict_detector(
     input val_in,               // Implied value
     input clock,
     input reset,
-    input en,                   // 
+    input en,                   // From Clause Evaluator
 
     output conflict,
     output logic [8:0] var_idx_out,
     output logic val_out,
-    output imply_stack_write_en,
-    output 
+    output imply_stack_push_en
 );
 
 
@@ -33,7 +32,7 @@ typedef struct packed {
 
 var_info [`MAX_VAR_COUNT-1:0] vals;
 
-assign conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val);
+assign conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
 
 integer i;
 always_ff @(posedge clock) begin
@@ -46,13 +45,17 @@ always_ff @(posedge clock) begin
         val_out <= 1'b0;
     end
     else if (!conflict) begin
-        // Update local memory with variable value 
-        vals[var_idx_in].val <= val_in;
-        vals[var_idx_in].valid <= 1'b1;
+        // Update local memory with variable value
+        if (en) begin
+            vals[var_idx_in].val <= val_in;
+            vals[var_idx_in].valid <= 1'b1;
+        end
 
         // Send variable index and value to imply stack
         var_idx_out <= var_idx_in;
         val_out <= val_in;
+        imply_stack_push_en <= en;
+
     end
 end
 
