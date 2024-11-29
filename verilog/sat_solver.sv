@@ -1,22 +1,24 @@
 // 5 variables per clause, 1023 clauses
 
 // Partial SAT Evaluator
-module partial_sat_evaluator(
-    input           [4:0] unassign,
-    input           [4:0] clause_mask,
-    input           [4:0] assignment,
-    input           [4:0] clause_pole,
+module partial_sat_evaluator # (
+    parameter VAR_PER_CLAUSE = 5
+    )(
+    input           [(VAR_PER_CLAUSE - 1):0] unassign,
+    input           [(VAR_PER_CLAUSE - 1):0] clause_mask,
+    input           [(VAR_PER_CLAUSE - 1):0] assignment,
+    input           [(VAR_PER_CLAUSE - 1):0] clause_pole,
     output logic    partial_sat    
 );
     // Intermediate values that feed into the OR
     // gate in the partial_sat module
-    logic [4:0] or_inputs;
+    logic [(VAR_PER_CLAUSE - 1):0] or_inputs;
 
     // Since we're dealing with indiviual bits here, bitwise (&) and logical (&&)
     // operators should be interchangable. For consistency, stick to bitwise.
 
     // TODO: check if these should be nonblocking <= or assign statments
-    for(int i = 0; i < 5; i = i + 1) begin
+    for(int i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
         assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & ~(assignment[i] & clause_pole[i])
     end
 
@@ -26,24 +28,29 @@ module partial_sat_evaluator(
 endmodule
 
 // Unit Clause valuator
-module unit_clause_evaluator(
-    input           [4:0] unassign,
-    input           [4:0] clause_mask,
-    input           [4:0][8:0] variable,
-    input           [4:0] clause_pole,
+module unit_clause_evaluator # (
+    parameter VAR_PER_CLAUSE = 5,
+    parameter NUM_VARIABLE = 128,
+    parameter VARIABLE_INDEX = $clog(NUM_VARIABLE)
+
+    )(
+    input           [(VAR_PER_CLAUSE - 1):0] unassign,
+    input           [(VAR_PER_CLAUSE - 1):0] clause_mask,
+    input           [(VAR_PER_CLAUSE - 1):0][(VARIABLE_INDEX-1):0] variable,
+    input           [(VAR_PER_CLAUSE - 1):0] clause_pole,
     output logic    new_assignment,
-    output logic    [8:0] implied_variable,
+    output logic    [(VARIABLE_INDEX-1):0] implied_variable,
     output logic    is_unit_clause
 );
     // Intermediate values that feed into the encoder
-    logic [4:0] encoder_inputs;
+    logic [(VAR_PER_CLAUSE-1):0] encoder_inputs;
     logic [2:0] mux_input;
 
     // Since we're dealing with indiviual bits here, bitwise (&) and logical (&&)
     // operators should be interchangable. For consistency, stick to bitwise.
 
     // TODO: check if these should be nonblocking <= or assign statments
-    for(int i = 0; i < 5; i = i + 1) begin
+    for(int i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
         assign encoder_inputs[i] = unassign[i] & clause_mask[i]
     end
 
