@@ -9,7 +9,7 @@ module conflict_detector_test;
     logic conflict;
     logic [8:0] var_idx_out;
     logic val_out;
-    logic imply_stack_push_en
+    logic imply_stack_push_en;
 
 
     conflict_detector DUT(
@@ -130,7 +130,7 @@ module conflict_detector_test;
 
         $display("5. Set enable to 0 (no conflict, and no enable)");
 
-        en = 0
+        en = 0;
 
         @(negedge clock);
 

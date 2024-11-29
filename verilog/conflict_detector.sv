@@ -19,7 +19,7 @@ module conflict_detector(
     output conflict,
     output logic [8:0] var_idx_out,
     output logic val_out,
-    output imply_stack_push_en
+    output logic imply_stack_push_en
 );
 
 
@@ -43,6 +43,7 @@ always_ff @(posedge clock) begin
         end
         var_idx_out <= 8'b0;
         val_out <= 1'b0;
+        imply_stack_push_en <= 0;
     end
     else if (!conflict) begin
         // Update local memory with variable value
