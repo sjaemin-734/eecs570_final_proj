@@ -1,6 +1,6 @@
 // 5 variables per clause, 1023 clauses
 
-// Imply Stack
+// Trace Table
 module trace_table # (
     parameter NUM_VARIABLE = 128,
     parameter VARIABLE_INDEXES = 8
@@ -13,7 +13,7 @@ module trace_table # (
     input                 type_in,      // Decide = 0, Forced = 1 
     input                 val,          // Assigned to be T or F
     input           [8:0] variable,
-    output reg            type_out,     //Always 1
+    output reg            type_out,
     output reg            val_out,      
     output reg      [8:0] variable_out,
     output reg            empty
@@ -31,7 +31,6 @@ module trace_table # (
             if (reset) begin
                 counter <= COUNTER_RESET_VAL;
                 empty <= 1'b1;
-                val_out <= 1'b0;
                 for (i = 0; i < NUM_VARIABLE; i=i+1) begin
                     stack[i] = 0;
                 end
@@ -46,9 +45,6 @@ module trace_table # (
                     stack[counter] <= [type_in, val, variable];
                     counter <= counter + 1;
                 end
-                
-            end
-            if ()  
                 
             end
         end
