@@ -5,8 +5,11 @@ module unit_clause_evaluator_test;
     parameter VAR_PER_CLAUSE = 5;
     parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1;
     parameter NUM_VARIABLE = 128;
-    parameter VARIABLE_INDEX = $clog(NUM_VARIABLE) - 1;
-    
+    parameter VARIABLE_INDEX = 6;
+
+    // clock
+    logic           clock;
+
     // Inputs
     logic           [VAR_PER_CLAUSE_INDEX:0] unassign;
     logic           [VAR_PER_CLAUSE_INDEX:0] clause_mask;
@@ -18,16 +21,14 @@ module unit_clause_evaluator_test;
     logic           [VAR_PER_CLAUSE_INDEX:0] implied_variable;
     logic           is_unit_clause;
 
-    integer i;
-
-    partial_sat_evaluator #(
+    unit_clause_evaluator #(
         .VAR_PER_CLAUSE(VAR_PER_CLAUSE),
         .NUM_VARIABLE(NUM_VARIABLE)
     ) DUT (
         .unassign(unassign),
         .clause_mask(clause_mask),
         .clause_pole(clause_pole),
-        .variable(variable)
+        .variable(variable),
         .new_assignment(new_assignment),
         .implied_variable(implied_variable),
         .is_unit_clause(is_unit_clause)
@@ -52,45 +53,53 @@ module unit_clause_evaluator_test;
         unassign = 5'b00000;
         clause_mask = 5'b00000;
         clause_pole = 5'b00000;
-        for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = 0;
         end
 
         #10;
 
         // Only 1 assigned
-        display("\n Test 1  Expected new_assignment = 0 implied_variable = var1 is_unit_clause = 1")
+        $display("\n Test 1  Expected new_assignment = 0 implied_variable = var1 is_unit_clause = 1");
         unassign = 5'b10000;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
-        for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
+
+        #10;
         
-        display("\n Test 2  Expected new_assignment = 1 implied_variable = var1 is_unit_clause = 1")
+        $display("\n Test 2  Expected new_assignment = 1 implied_variable = var1 is_unit_clause = 1");
         unassign = 5'b10000;
         clause_mask = 5'b11111;
         clause_pole = 5'b11111;
-        for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
+        #10;
+
         // More than 1 unassigned
-        display("\n Test 3  Expected is_unit_clause = 0")
+        $display("\n Test 3  Expected is_unit_clause = 0");
         unassign = 5'b10001;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
-        for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
-        display("\n Test 4  Expected is_unit_clause = 0")
+        #10;
+
+        $display("\n Test 4  Expected is_unit_clause = 0");
         unassign = 5'b11111;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
-        for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
+
+        #10;
 
         $finish;
     end
