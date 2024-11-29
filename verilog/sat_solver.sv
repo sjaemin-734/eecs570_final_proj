@@ -39,8 +39,8 @@ module unit_clause_evaluator # (
     )(
     input           [VAR_PER_CLAUSE_INDEX:0] unassign,
     input           [VAR_PER_CLAUSE_INDEX:0] clause_mask,
-    input           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable,
     input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
+    input           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable,
     output logic    new_assignment,
     output logic    [VAR_PER_CLAUSE_INDEX:0] implied_variable,
     output logic    is_unit_clause
