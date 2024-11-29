@@ -2,6 +2,9 @@
 # misc
 *.pdf
 
+#! EECS 470 Makefile stuff
+470synth.tcl
+
 # zip files
 *.zip
 *.gz

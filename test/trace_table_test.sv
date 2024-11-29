@@ -1,6 +1,3 @@
-// Bad practice but needed for testbenches
-`include trace_table.sv
-
 module trace_table_test;
 
     // Inputs
