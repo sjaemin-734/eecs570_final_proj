@@ -24,16 +24,15 @@ module imply_stack # (
     logic [NUM_VARIABLE:0] counter;                               // current index in stack
     logic [NUM_VARIABLE:0] stack[0:(VARIABLE_INDEXES+1)];         // [val [1], variable index [8:0]]
 
-    logic ty;
     logic val;
     logic [8:0] variable;
     logic empty;
 
 
     always_comb begin
-        type_out = ty;
+        type_out = 1'b1;
         val_out = val;
-        variable_out = variable;
+        variable_out = var_o;
         empty_out = empty;
     end
 
@@ -49,9 +48,8 @@ module imply_stack # (
             end else if (reset == 0) begin
                 empty <= counter == 0 ? 1'b1: 1'b0;
                 if (rw == 0 & ~empty) begin
-                    variable <= stack[counter - 1][VARIABLE_INDEXES:0]; 
+                    var_o <= stack[counter - 1][VARIABLE_INDEXES:0]; 
                     val <= stack[counter - 1][VARIABLE_INDEXES+1];
-                    ty <= 1'b1;
                     counter <= counter - 1;
                 end else if (rw == 1) begin
                     stack[counter] <= {val, variable};
