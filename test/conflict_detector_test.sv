@@ -65,6 +65,8 @@ module conflict_detector_test;
             // $display("expected_result.val_out: %b", expected_result.val_out);
             $display("val_out: %b\n", val_out);
 
+            $display("imply_stack_push_en: %b\n", imply_stack_push_en);
+
             // $display("@@@FAILED");
             // $finish;
         // end
@@ -74,6 +76,7 @@ module conflict_detector_test;
         $display("Begin conflict_detector_test");
         reset = 1;
         clock = 0;
+        en = 1;
 
         @(negedge clock);
         
@@ -120,13 +123,43 @@ module conflict_detector_test;
         @(negedge clock);
 
         reset = 0;
+        var_idx_in = 8'h01;
+        val_in = 1'b1;
 
         @(negedge clock);
+
+        $display("5. Set enable to 0 (no conflict, and no enable)");
+
+        en = 0
+
+        @(negedge clock);
+
+        $display("6. With enable at 0, try to trigger a conflict (no conflict, and no enable)");
 
         var_idx_in = 8'h01;
         val_in = 1'b1;
 
         @(negedge clock);
+
+        $display("7.  Reset, Set enable to 1, send a variable and value, then set enable to 0 and try to trigger a conflict (no conflict, and no enable)");
+
+        reset = 1;
+        en = 1;
+
+        @(negedge clock);
+
+        reset = 0;
+        var_idx_in = 8'h01;
+        val_in = 1'b1;
+
+        @(negedge clock);
+
+        en = 0;
+        var_idx_in = 8'h01;
+        val_in = 1'b1;
+
+        @(negedge clock);
+
 
         $display("Test ended");
         $finish;
