@@ -138,8 +138,8 @@ TCL_SCRIPT = 470synth.tcl
 # P1 TODO: change TESTBENCH and SOURCES to match your current modules
 # options for SOURCES:   ps4-assign.sv, ps4-if_else.sv | ps8.sv     | rps4.sv
 # options for TESTBENCH: ps4_test.sv                   | ps8_test.sv| rps4_test.sv
-TESTBENCH   = test/trace_table_test.sv
-SOURCES     = verilog/trace_table.sv
+TESTBENCH   = test/imply_stack.sv
+SOURCES     = verilog/imply_stack_test.sv
 # SYNTH_FILES = ps8.vg # P1 NOTE: synthesis is not tested in project 1
 
 # the .vg rule is automatically generated below when the name of the file matches its top level module

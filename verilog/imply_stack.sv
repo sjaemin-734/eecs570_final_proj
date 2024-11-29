@@ -46,11 +46,8 @@ module imply_stack # (
                     counter <= counter + 1;
                 end
                 
-            end
-            if ()  
-                
+            end                
             end
         end
-    end
 
 endmodule
