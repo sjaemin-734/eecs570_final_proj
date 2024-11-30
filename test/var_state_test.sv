@@ -1,6 +1,6 @@
 `include "sysdefs.svh"
 
-module stack_test;
+module var_state_test;
 
     // Inputs
     logic clock;
