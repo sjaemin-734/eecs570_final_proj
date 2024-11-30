@@ -7,17 +7,16 @@
     If there is no conflict, the variable and its assignment
     will be sent to the Imply Stack
 */
-`define MAX_VAR_COUNT 512
 
 module conflict_detector(
-    input [8:0] var_idx_in,     // Implied Variable
+    input [MAX_VARS_BITS-1:0] var_idx_in,     // Implied Variable
     input val_in,               // Implied value
     input clock,
     input reset,
     input en,                   // From Clause Evaluator
 
     output conflict,
-    output logic [8:0] var_idx_out,
+    output logic [MAX_VARS_BITS-1:0] var_idx_out,
     output logic val_out,
     output logic imply_stack_push_en
 );
@@ -30,7 +29,7 @@ typedef struct packed {
     logic valid;
 } var_info;
 
-var_info [`MAX_VAR_COUNT-1:0] vals;
+var_info [`MAX_VARS-1:0] vals;
 
 assign conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
 
@@ -38,10 +37,10 @@ integer i;
 always_ff @(posedge clock) begin
 
     if (reset) begin
-        for (i=0; i < `MAX_VAR_COUNT; i++) begin
+        for (i=0; i < `MAX_VARS; i++) begin
             vals[i].valid <= 1'b0;
         end
-        var_idx_out <= 8'b0;
+        var_idx_out <= {MAX_VARS_BITS-1{1'b0}};
         val_out <= 1'b0;
         imply_stack_push_en <= 0;
     end

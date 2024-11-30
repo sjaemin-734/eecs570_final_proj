@@ -1,5 +1,5 @@
 
-// To use this as an imply stack, tie val_in to 1.
+// To use this as an imply stack, tie type_in to 1.
 // To use this as a trace table, leave everything as is.
 module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
     input                                clock,
