@@ -13,6 +13,7 @@ module control # (
     output logic unsat
 );
 
+// state variables
 enum logic [3:0]{
     IDLE,
     FIND_NEXT,
@@ -20,22 +21,31 @@ enum logic [3:0]{
     BCP_INIT,
     BCP_CORE,
     BACKPROP,
-    BCP_WAIT,
+    BCP_WAIT,       // CHECK:Is it needed to for another transient state?
     SAT,
     UNSAT
-} state = IDLE;
-
+} state;
 logic [3:0] next_state;
 
+// Conflict
 logic conflict;
+
+// Propogate variable + type + value
 logic prop_val;
-logic prop_var;
+logic [VARIABLE_INDEX:0] prop_var;
 logic prop_type;
 
+// Update variable + type + value
+logic update_val;
+logic [VARIABLE_INDEX:0] update_var;
+logic update_type;
+
+// Imply Table variables
 logic empty_imply;
 logic full_imply;
 logic pop_imply;
 
+// Trace Table variables
 logic empty_trace;
 logic full_trace;
 logic pop_trace;
@@ -45,9 +55,10 @@ always_comb begin
     if (reset){
         conflict = 1'b0;
         prop_val = 1'b0;
+        prop_type = 1'b0;
         prop_var = VARIABLE_INDEX{1'b0};
-        sat = 0;
-        unsat = 0;
+        sat = 1'b0;
+        unsat = 1'b0;
     }
     case(state)
         SAT: begin
@@ -84,9 +95,9 @@ stack #(
         .type_in(prop_type),
         .val_in(prop_val),
         .var_in(prop_var),
-        .var_out(),
-        .type_out(),
-        .val_out(),
+        .var_out(update_var),
+        .type_out(update_type),
+        .val_out(update_val),
         .empty(empty_trace),
         .full(full_trace)
     );
@@ -95,6 +106,9 @@ stack #(
 always_ff @(posedge clock) begin
     if (reset) begin 
         state <= IDLE;
+        push_trace <= 0'b0;
+        pop_imply <= 0'b0;
+        pop_trace <= 0'b0;
     end else begin
         state <= next_state;
         case(state)
@@ -110,32 +124,35 @@ always_ff @(posedge clock) begin
                 next_state <= DECICE;
             end else begin
                 push_trace <= 0'b1;
-                // Update Var State Table with unassign = 0 & val = prop_val
+                // TODO:Update Var State Table with unassign = 0 & val = prop_val
                 next_state <= BCP_INIT;
             end
         end
         DECICE: begin
             push_trace <= 0'b1;
-            // decide module gives prop_var, prop_val, prop_type (D)
-            // Update Var State Table with unassign = 0 & val = prop_val
+            // TODO:decide module gives prop_var, prop_val, prop_type (D)
+            // TODO:Update Var State Table with unassign = 0 & val = prop_val
             next_state <= BCP_INIT;
         end
         BCP_INIT: begin
             push_trace <= 0'b0;
-            // Receive start and end clause IDs for prop_var
+            // TODO: Receive start and end clause IDs for prop_var
             next_state <= BCP_CORE;
         end
         BCP_CORE: begin
-            // Receive clause info
+            // TODO: Receive clause info
         end
         BACKPROP: begin
-            conflict <= 0'b0;           // TODO: Where does this happen?
-            // Send conflict line to Decide Module
+            conflict <= 0'b0;           // TODO: Where & How does this happen? Clearing conflict variable
+            // TODO:Send conflict line to Decide Module
+            // TODO:Update Var State table from values coming from popping Trace Table
             if (~prop_type) begin       // D == 0
                 pop_trace <= 1'b0;
                 next_state <= BCP_INIT;
-                push_trace <= 1'b1;
-                prop_type <= 1'b1;      // Change to F == 1
+                push_trace <= 1'b1;         // TODO: Might need to wait a cycle aka add transient state between
+                prop_var <= update_var;
+                prop_type <= ~update_type;      // Change to F == 1
+                prop_val <= update_val;
             end
             if (empty_trace) begin
                 next_state <= UNSAT;
@@ -143,18 +160,17 @@ always_ff @(posedge clock) begin
             end
         end
         BCP_WAIT: begin
-            if (conflict)
+            if (conflict) begin
                 next_state <= BACKPROP;
                 pop_trace < = 1'b1;
-            else 
+            end else if (1'b1) begin        // TODO: Get NOT BUSY LINES from clause_eval & conflict modules
                 next_state <= FIND_NEXT;
+                pop_imply <= 1'b1;
+            end 
         end
         endcase
     end
 
 end
-
-
-
 
 endmodule
