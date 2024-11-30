@@ -11,15 +11,15 @@ module decider_stack (
     input                                reset,
     input                                push,
     input                                pop,
-    input        [MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
+    input        [`MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
 
-    output logic [MAX_VARS_BITS-1:0]  dec_idx_out,           
-    output logic                         empty,
+    output logic [`MAX_VARS_BITS-1:0]  dec_idx_out,           
+    output logic                         empty
     // output logic                         full
 );
 
-    logic [(MAX_VARS-1):0][MAX_VARS_BITS:0] stack;
-    logic [MAX_VARS_BITS:0]  stack_ptr;
+    logic [(`MAX_VARS-1):0][`MAX_VARS_BITS:0] stack;
+    logic [`MAX_VARS_BITS:0]  stack_ptr;
 
     always_ff @(posedge clock) begin
         if (reset) begin
@@ -28,7 +28,7 @@ module decider_stack (
             // full <= 0;
 
         end else begin
-            if (push && !full) begin
+            if (push) begin
                 stack[stack_ptr] <= dec_idx_in;
                 stack_ptr        <= stack_ptr + 1;
                 empty            <= 0;
@@ -40,7 +40,7 @@ module decider_stack (
             end else if (pop && !empty) begin
                 stack_ptr <= stack_ptr - 1;
                 // full      <= 0;
-                if (stack_ptr == 1) begin
+                if (stack_ptr == 0) begin
                     empty <= 1;
                 end
             end
@@ -49,9 +49,9 @@ module decider_stack (
 
     always_comb begin
       if (!empty & pop) begin
-            dec_idx_out = stack[stack_ptr - 1][MAX_VARS_BITS-1:0];
+            dec_idx_out = stack[stack_ptr][`MAX_VARS_BITS-1:0];
       end else begin
-            dec_idx_out = {MAX_VARS_BITS{1'b0}};
+            dec_idx_out = {`MAX_VARS_BITS{1'b0}};
       end
     end
 

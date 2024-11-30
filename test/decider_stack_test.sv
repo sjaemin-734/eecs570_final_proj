@@ -2,13 +2,13 @@
 
 module decider_stack_test;
 
-    logic                                clock,
-    logic                                reset,
-    logic                                push,
-    logic                                pop,
-    logic        [`MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
-    logic [`MAX_VARS_BITS-1:0]  dec_idx_out,           
-    logic                         empty,
+    logic   clock;
+    logic   reset;
+    logic   push;
+    logic   pop;
+    logic   [`MAX_VARS_BITS-1:0]  dec_idx_in; // Index for the Decider
+    logic   [`MAX_VARS_BITS-1:0]  dec_idx_out;           
+    logic   empty;
     // logic                         full
 
 
@@ -33,7 +33,7 @@ module decider_stack_test;
     always @(posedge clock) begin
             #1// if (!correct) begin
 
-            $display("dec_idx_out: %b\n", conflict);
+            $display("dec_idx_out: %d\n", dec_idx_out);
 
             $display("empty: %d\n", empty);
 
@@ -51,99 +51,113 @@ module decider_stack_test;
         
         reset = 0;
         $display("0. Push a bunch of data in without setting the push bit high (Should be empty)");
-        dec_idx = 1;
+        dec_idx_in = 1;
 
         @(negedge clock);
 
-        dec_idx = 2;
+        dec_idx_in = 2;
 
         @(negedge clock);
 
-        dec_idx = 5;
+        dec_idx_in = 5;
 
         @(negedge clock);
 
-        dec_idx = 7;
+        dec_idx_in = 7;
 
         @(negedge clock);
 
         $display("1. Push data in with the push bit set high (not empty and dec_index_out is 0)");
 
-        dec_idx = 1;
+        dec_idx_in = 1;
         push = 1;
 
         @(negedge clock);
 
-        dec_idx = 2;
+        dec_idx_in = 2;
 
         @(negedge clock);
 
-        dec_idx = 5;
+        dec_idx_in = 5;
 
         @(negedge clock);
 
-        dec_idx = 7;
+        dec_idx_in = 7;
 
         @(negedge clock);
 
-        $display("2. Imply val for variable, then imply something different for different variable (no conflict)");
+        $display("2. pop data (7, 5, 2, 1), should be empty after last pop");
 
-        var_idx_in = 8'h03;
-        val_in = 1'b1;
-
-        @(negedge clock);
-
-        $display("3. Imply val for variable, then imply something different for same variable (conflict)");
-
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
+        push = 0;
+        pop = 1;
 
         @(negedge clock);
 
-        $display("4. Run reset and then imply the conflict triggering case (no conflict)");
+        @(negedge clock);
 
+        @(negedge clock);
+
+        @(negedge clock);
+
+        $display("3. pop when empty (should be empty and dec_inx_out is 0)");
+
+        @(negedge clock);
+
+
+        $display("4. push data and then reset");
+
+        push = 1;
+        pop = 0;
+        dec_idx_in = 11;
+
+        @(negedge clock);
+
+        dec_idx_in = 32;
+
+        @(negedge clock);
+
+        dec_idx_in = 45;
+
+        @(negedge clock);
+
+        push = 0;
         reset = 1;
 
         @(negedge clock);
 
-        reset = 0;
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
-
-        @(negedge clock);
-
-        $display("5. Set enable to 0 (no conflict, and no enable)");
-
-        en = 0;
-
-        @(negedge clock);
-
-        $display("6. With enable at 0, try to trigger a conflict (no conflict, and no enable)");
-
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
-
-        @(negedge clock);
-
-        $display("7.  Reset, Set enable to 1, send a variable and value, then set enable to 0 and try to trigger a conflict (no conflict, and no enable)");
-
-        reset = 1;
-        en = 1;
-
-        @(negedge clock);
+        $display("5. pop, (Should be empty)");
 
         reset = 0;
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
+        pop = 1;
 
         @(negedge clock);
 
-        en = 0;
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
+        $display("6. Push new values, then pop, the ones before the reset should be gone");
+
+        pop = 0;
+        push = 1;
+        dec_idx_in = 100;
 
         @(negedge clock);
 
+        dec_idx_in = 101;
+
+        @(negedge clock);
+
+        dec_idx_in = 102;
+
+        @(negedge clock);
+
+        push = 0;
+        pop = 1;
+
+        @(negedge clock);
+
+        @(negedge clock);
+
+        @(negedge clock);
+
+        @(negedge clock);
 
         $display("Test ended");
         $finish;
