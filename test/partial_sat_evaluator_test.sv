@@ -1,5 +1,4 @@
 // located in sat_solver.sv TODO: WE SHOULD RENAME THIS FILE
-// LOGIC OF THIS IS NOT MAKING SENSE, ngmatt
 
 module partial_sat_evaluator_test;
 
