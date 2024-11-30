@@ -9,7 +9,7 @@ module stack_test;
     logic write;
     logic val_in;
     logic unassign_in;
-    logic [MAX_VARS_BITS-1:0] var_in;
+    logic [`MAX_VARS_BITS-1:0] var_in;
 
     // Outputs
     logic val_out;
@@ -21,7 +21,7 @@ module stack_test;
         .read(read),
         .write(write),
         .val_in(val_in),
-        .unassign_in(unassign_in)
+        .unassign_in(unassign_in),
         .var_in(var_in),
         .val_out(val_out),
         .unassign_out(unassign_out)
@@ -47,6 +47,9 @@ module stack_test;
         read = 0;
         write = 0;
 
+        @(negedge clock);
+
+        reset = 0;
         @(negedge clock);
 
         $display("\nRandom Read: Expected val_out = 0 unassign_out = 1");
@@ -105,6 +108,8 @@ module stack_test;
         val_in = 1;
         unassign_in = 0;
 
+        @(negedge clock);
+        
         write = 0;
         read = 1;
         var_in = 18;

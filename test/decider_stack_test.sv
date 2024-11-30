@@ -6,23 +6,21 @@ module decider_stack_test;
     logic                                reset,
     logic                                push,
     logic                                pop,
-    logic        [MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
-    logic [MAX_VARS_BITS-1:0]  dec_idx_out,           
-    // output logic                         empty,
-    // output logic                         full
+    logic        [`MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
+    logic [`MAX_VARS_BITS-1:0]  dec_idx_out,           
+    logic                         empty,
+    // logic                         full
 
 
-    conflict_detector DUT(
-        .var_idx_in(var_idx_in), // Implied Variable
-        .val_in(val_in), // Implied value
+    decider_stack DUT(
         .clock(clock),
         .reset(reset),
-        .en(en),
+        .push(push),
+        .pop(pop),
+        .dec_idx_in(dec_idx_in),
 
-        .conflict(conflict),
-        .var_idx_out(var_idx_out),
-        .val_out(val_out),
-        .imply_stack_push_en(imply_stack_push_en)
+        .dec_idx_out(dec_idx_out),
+        .empty(empty)
     );
 
     // Testbench clock
@@ -31,74 +29,60 @@ module decider_stack_test;
         clock = ~clock;
     end
 
-    // // Check correctness
-    // logic correct;
-    // typedef struct packed {
-    //     logic conflict;
-    //     logic [8:0] var_idx_out;
-    //     logic val_out;
-    // } expected_result;
-
-    // expected_result expected_result;
-
-    // always_comb begin
-    //     correct = 1;
-    //     // Stay correct if not done yet
-    //     if (
-    //         expected_result.conflict != conflict ||
-    //         expected_result.var_idx_out != var_idx_out ||
-    //         expected_result.val_out != val_out
-    //     ) begin
-    //         correct = 0;
-    //     end
-    // end
-
     // Output
     always @(posedge clock) begin
             #1// if (!correct) begin
-            // $display("@@@Failed at time %4.0f", $time);
 
-            // $display("expected_result.conflict: %b", expected_result.conflict);
-            $display("conflict: %b\n", conflict);
-            // $display("expected_result.var_idx_out: %d", expected_result.var_idx_out);
-            $display("var_idx_out: %d\n", var_idx_out);
-            // $display("expected_result.val_out: %b", expected_result.val_out);
-            $display("val_out: %b\n", val_out);
+            $display("dec_idx_out: %b\n", conflict);
 
-            $display("imply_stack_push_en: %b\n", imply_stack_push_en);
+            $display("empty: %d\n", empty);
 
-            // $display("@@@FAILED");
-            // $finish;
         // end
     end
 
     initial begin
-        $display("Begin conflict_detector_test");
+        $display("Begin decider_stack_test");
         reset = 1;
         clock = 0;
-        en = 1;
+        push = 0;
+        pop = 0;
 
         @(negedge clock);
         
         reset = 0;
+        $display("0. Push a bunch of data in without setting the push bit high (Should be empty)");
+        dec_idx = 1;
 
         @(negedge clock);
 
-        $display("0. Imply val for variable, then imply something different for different variable (no conflict)");
-        var_idx_in = 8'h01;
-        val_in = 1'b0;
+        dec_idx = 2;
 
         @(negedge clock);
 
-        var_idx_in = 8'h02;
-        val_in = 1'b1;
+        dec_idx = 5;
 
         @(negedge clock);
 
-        $display("1. Imply val for variable, then imply something different for same variable (conflict)");
+        dec_idx = 7;
 
-        var_idx_in = 8'h01;
-        val_in = 1'b1;
+        @(negedge clock);
+
+        $display("1. Push data in with the push bit set high (not empty and dec_index_out is 0)");
+
+        dec_idx = 1;
+        push = 1;
+
+        @(negedge clock);
+
+        dec_idx = 2;
+
+        @(negedge clock);
+
+        dec_idx = 5;
+
+        @(negedge clock);
+
+        dec_idx = 7;
 
         @(negedge clock);
 

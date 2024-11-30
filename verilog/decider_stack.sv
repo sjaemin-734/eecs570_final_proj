@@ -12,8 +12,9 @@ module decider_stack (
     input                                push,
     input                                pop,
     input        [MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
+
     output logic [MAX_VARS_BITS-1:0]  dec_idx_out,           
-    // output logic                         empty,
+    output logic                         empty,
     // output logic                         full
 );
 
@@ -23,14 +24,14 @@ module decider_stack (
     always_ff @(posedge clock) begin
         if (reset) begin
             stack_ptr <= 0;
-            // empty <= 1;
+            empty <= 1;
             // full <= 0;
 
         end else begin
             if (push && !full) begin
                 stack[stack_ptr] <= dec_idx_in;
                 stack_ptr        <= stack_ptr + 1;
-                // empty            <= 0;
+                empty            <= 0;
 
                 // if (stack_ptr == NUM_VARIABLE - 1) begin
                 //     full <= 1;
@@ -39,10 +40,9 @@ module decider_stack (
             end else if (pop && !empty) begin
                 stack_ptr <= stack_ptr - 1;
                 // full      <= 0;
-
-                // if (stack_ptr == 1) begin
-                //     empty <= 1;
-                // end
+                if (stack_ptr == 1) begin
+                    empty <= 1;
+                end
             end
         end
     end

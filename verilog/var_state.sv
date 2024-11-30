@@ -12,20 +12,20 @@ module var_state(
     input                                val_in,
     input                                unassign_in,
     // Used by both
-    input        [MAX_VARS_BITS - 1:0]   var_in,
+    input        [`MAX_VARS_BITS - 1:0]   var_in,
     // input        [VAR_PER_CLAUSE - 1:0][MAX_VARS_BITS - 1:0]   data_in,
     // For read
     output logic                         val_out,
-    output logic                         unassign_out,
+    output logic                         unassign_out
     // output        [VAR_PER_CLAUSE - 1:0][1:0]        data_out
 );
 
-    logic [(MAX_VARS-1):0][1:0] states;         // 2 bits unassign (Not assigned = 1, assigned = 0) + val (True = 1, False = 0)
+    logic [(`MAX_VARS-1):0][1:0] states;         // 2 bits unassign (Not assigned = 1, assigned = 0) + val (True = 1, False = 0)
 
     always_ff @(posedge clock) begin
         if (reset) begin
-            for(integer i = 0; i < MAX_VARS; i = i + 1) begin
-                stack[i] = 2'b10;
+            for(integer i = 0; i < `MAX_VARS; i = i + 1) begin
+                states[i] = 2'b10;
             end
         end else begin
             if (write) begin

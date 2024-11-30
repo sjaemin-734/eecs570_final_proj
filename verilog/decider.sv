@@ -5,15 +5,15 @@
 
 
 module decider(
-    input [MAX_VARS-1:0][1:0] dec_config, // List of variable indices and their decision values
-    input rw, // Read = 0, Write = 1. If read, Control is asking for next values. If write, Control is replacig dec_idx
-    input [MAX_VARS_BITS-1:0] back_dec_idx, // Used by the Control when backtracking
+    input [`MAX_VARS-1:0][1:0] dec_config, // List of variable indices and their decision values
+    input rw, // Read = 0, Write = 1. If read, Control is asking for next values. If write, Control is replacing dec_idx
+    input [`MAX_VARS_BITS-1:0] back_dec_idx, // Used by the Control when backtracking
     input clock,
     input reset,
     input en,
 
-    output [MAX_VARS_BITS-1:0] dec_idx_out,
-    output [MAX_VARS_BITS-1:0] var_idx_out,
+    output [`MAX_VARS_BITS-1:0] dec_idx_out,
+    output [`MAX_VARS_BITS-1:0] var_idx_out,
     output  val_out
 );
 
