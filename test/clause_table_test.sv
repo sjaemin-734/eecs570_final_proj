@@ -10,9 +10,9 @@ module clause_table_test;
     logic       [`CLAUSE_TABLE_BITS-1:0] index_in;
     logic        [`MAX_CLAUSES_BITS-1:0]  clause_in;
     // Outputs
-    logic logic [`MAX_CLAUSES_BITS-1:0]  clause_index_out;
-    logic logic                         full;
-    logic logic                         error;
+    logic  [`MAX_CLAUSES_BITS-1:0]  clause_index_out;
+    logic                          full;
+    logic                         error;
 
 
     clause_table DUT (
