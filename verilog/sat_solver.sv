@@ -21,7 +21,7 @@ module partial_sat_evaluator # (
 
     // TODO: check if these should be nonblocking <= or assign statments
     for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
-        assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & ~(val[i] & clause_pole[i]);
+        assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & (val[i] ^ clause_pole[i]);
     end
 
     // or_inputs is a packed array so this will OR all of the values in it
