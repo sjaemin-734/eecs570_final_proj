@@ -33,7 +33,7 @@ module control_test;
 
         $monitor("INPUTS: reset = %0b start = %0b \
                 \nOUTPUTS: sat = %0b unsat %0b\n",
-                reset, push, start, sat, unsat);
+                reset, start, sat, unsat);
 
         $display("\nReset");
         // Reset test
@@ -42,11 +42,12 @@ module control_test;
 
         @(negedge clock);
 
-        $display("\nStart Solver")
+        $display("\nStart Solver");
+
         reset = 0;
         start = 1;
 
-        @negedge
+        @(negedge clock);
 
         start = 0;
 

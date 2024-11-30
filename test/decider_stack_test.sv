@@ -1,17 +1,15 @@
 `include "sysdefs.svh"
 
-module conflict_detector_test;
+module decider_stack_test;
 
-    logic [MAX_VARS_BITS-1:0] var_idx_in; // Implied Variable
-    logic val_in; // Implied value
-    logic clock;
-    logic reset;
-    logic en;
-
-    logic conflict;
-    logic [MAX_VARS_BITS-1:0] var_idx_out;
-    logic val_out;
-    logic imply_stack_push_en;
+    logic                                clock,
+    logic                                reset,
+    logic                                push,
+    logic                                pop,
+    logic        [MAX_VARS_BITS-1:0]  dec_idx_in, // Index for the Decider
+    logic [MAX_VARS_BITS-1:0]  dec_idx_out,           
+    // output logic                         empty,
+    // output logic                         full
 
 
     conflict_detector DUT(

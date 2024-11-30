@@ -1,9 +1,9 @@
-`include "stack.sv"
+`include "verilog/stack.sv"
 
 // control module
 module control # (
     parameter NUM_VARIABLE = 128,
-    parameter VARIABLE_INDEX = 7-1;
+    parameter VARIABLE_INDEX = 7-1,
     parameter VAR_PER_CLAUSE = 5
 )(
     input clock,
@@ -52,14 +52,14 @@ logic pop_trace;
 logic push_trace;
 
 always_comb begin
-    if (reset){
+    if (reset) begin
         conflict = 1'b0;
         prop_val = 1'b0;
         prop_type = 1'b0;
-        prop_var = VARIABLE_INDEX{1'b0};
+        prop_var = {VARIABLE_INDEX{1'b0}};
         sat = 1'b0;
         unsat = 1'b0;
-    }
+    end
     case(state)
         SAT: begin
             sat = 1'b1;
@@ -78,6 +78,9 @@ stack #(
         .reset(conflict),                               // TODO: Is Conflict Module doing this?
         .pop(pop_imply),
         .var_out(prop_var),
+        .type_in(),
+        .val_in(),
+        .var_in(),
         .type_out(prop_type),
         .val_out(prop_val),
         .empty(empty_imply),
@@ -156,13 +159,13 @@ always_ff @(posedge clock) begin
             end
             if (empty_trace) begin
                 next_state <= UNSAT;
-                pop_trace < = 1'b0;     // Stop popping from trace table
+                pop_trace <= 1'b0;     // Stop popping from trace table
             end
         end
         BCP_WAIT: begin
             if (conflict) begin
                 next_state <= BACKPROP;
-                pop_trace < = 1'b1;
+                pop_trace <= 1'b1;
             end else if (1'b1) begin        // TODO: Get NOT BUSY LINES from clause_eval & conflict modules
                 next_state <= FIND_NEXT;
                 pop_imply <= 1'b1;
