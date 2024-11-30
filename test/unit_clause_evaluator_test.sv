@@ -18,7 +18,7 @@ module unit_clause_evaluator_test;
 
     // Outputs
     logic           new_val;
-    logic           [VAR_PER_CLAUSE_INDEX:0] implied_variable;
+    logic           [VARIABLE_INDEX:0] implied_variable;
     logic           is_unit_clause;
 
     unit_clause_evaluator #(

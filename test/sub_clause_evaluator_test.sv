@@ -1,12 +1,11 @@
 // located in sub_clause_eval.sv
 
-module sub_clause_eval_test;
+module sub_clause_evaluator_test;
 
     parameter VAR_PER_CLAUSE = 5;
     parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1;
     parameter NUM_VARIABLE = 128;
     parameter VARIABLE_INDEX = 7 - 1;
-    parameter VARIABLE_INDEX = 6;
 
     // clock
     logic           clock;
@@ -20,17 +19,17 @@ module sub_clause_eval_test;
 
     // Outputs
     logic           new_val;
-    logic           [VAR_PER_CLAUSE_INDEX:0] implied_variable;
+    logic           [VARIABLE_INDEX:0] implied_variable;
     logic           unit_clause;
 
-    unit_clause_eval #(
+    sub_clause_evaluator #(
         .VAR_PER_CLAUSE(VAR_PER_CLAUSE),
         .NUM_VARIABLE(NUM_VARIABLE)
     ) DUT (
         .unassign(unassign),
         .clause_mask(clause_mask),
         .clause_pole(clause_pole),
-        .val(val)
+        .val(val),
         .variable(variable),
         .new_val(new_val),
         .implied_variable(implied_variable),
@@ -48,7 +47,7 @@ module sub_clause_eval_test;
 
         $monitor("INPUTS: unassign = %0b clause_mask = %0b clause_pole = %0b val = %0b var1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d\
                 \nOUTPUTS: new_val = %0b implied_variable = %0d unit_clause = %0b\n",
-                unassign, clause_mask, clause_pole, variable[0], variable[1], variable[2], variable[3], variable[4], new_val, implied_variable, unit_clause);
+                unassign, clause_mask, clause_pole, val, variable[0], variable[1], variable[2], variable[3], variable[4], new_val, implied_variable, unit_clause);
 
         $display("\nReset Test");
         // Reset test

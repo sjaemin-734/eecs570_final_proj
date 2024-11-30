@@ -41,7 +41,7 @@ module unit_clause_evaluator # (
     input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
     input           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable,
     output logic    new_val,
-    output logic    [VAR_PER_CLAUSE_INDEX:0] implied_variable,
+    output logic    [VARIABLE_INDEX:0] implied_variable,
     output logic    is_unit_clause
 );
     // Intermediate values that feed into the encoder
@@ -72,9 +72,9 @@ module unit_clause_evaluator # (
     end
     
     // Output if unit clause
-    assign is_unit_clause = mux_input && 3'b111 ? 0 : 1;
+    assign is_unit_clause = mux_input == 3'b111 ? 0 : 1;
 
     // Select the variable to be assigned
-    assign implied_variable = is_unit_clause ? 0 : variable[mux_input];
-    assign new_val = is_unit_clause ? 0 : ~clause_pole[mux_input];
+    assign implied_variable = is_unit_clause ? variable[mux_input] : 0;
+    assign new_val = is_unit_clause ? ~clause_pole[mux_input] : 0;
 endmodule

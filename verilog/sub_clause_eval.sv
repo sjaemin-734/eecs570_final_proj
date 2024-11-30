@@ -1,4 +1,4 @@
-`include "sat_solver.sv"
+`include "verilog/sat_solver.sv"
 
 // Sub Clause Evaluator
 module sub_clause_evaluator # (
@@ -41,7 +41,7 @@ module sub_clause_evaluator # (
         .clause_pole(clause_pole),
         .new_val(new_val),
         .implied_variable(implied_variable),
-        .candidate_unit(candidate_unit)
+        .is_unit_clause(candidate_unit)
     );
 
     assign unit_clause = ~partial_sat & candidate_unit;
