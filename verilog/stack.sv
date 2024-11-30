@@ -39,7 +39,7 @@ module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
                 stack_ptr <= stack_ptr - 1;
                 full      <= 0;
 
-                if (stack_ptr == 1) begin
+                if (stack_ptr == 0) begin
                     empty <= 1;
                 end
             end
@@ -48,9 +48,9 @@ module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
 
     always_comb begin
       if (!empty & pop) begin
-            type_out = stack[stack_ptr - 1][VARIABLE_INDEXES+1];
-            val_out = stack[stack_ptr - 1][VARIABLE_INDEXES];
-            var_out = stack[stack_ptr - 1][VARIABLE_INDEXES-1:0];
+            type_out = stack[stack_ptr][VARIABLE_INDEXES+1];
+            val_out = stack[stack_ptr][VARIABLE_INDEXES];
+            var_out = stack[stack_ptr][VARIABLE_INDEXES-1:0];
       end else begin
             type_out = 1'b0;
             val_out = 1'b0;
