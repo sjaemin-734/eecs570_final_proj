@@ -17,7 +17,7 @@ module unit_clause_evaluator_test;
     logic           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable;
 
     // Outputs
-    logic           new_assignment;
+    logic           new_val;
     logic           [VAR_PER_CLAUSE_INDEX:0] implied_variable;
     logic           is_unit_clause;
 
@@ -29,7 +29,7 @@ module unit_clause_evaluator_test;
         .clause_mask(clause_mask),
         .clause_pole(clause_pole),
         .variable(variable),
-        .new_assignment(new_assignment),
+        .new_val(new_val),
         .implied_variable(implied_variable),
         .is_unit_clause(is_unit_clause)
     );
@@ -44,8 +44,8 @@ module unit_clause_evaluator_test;
     initial begin  
 
         $monitor("INPUTS: unassign = %0b clause_mask = %0b clause_pole = %0b var1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d\
-                \nOUTPUTS: new_assignment = %0b implied_variable = %0d is_unit_clause = %0b\n",
-                unassign, clause_mask, clause_pole, variable[0], variable[1], variable[2], variable[3], variable[4], new_assignment, implied_variable, is_unit_clause);
+                \nOUTPUTS: new_val = %0b implied_variable = %0d is_unit_clause = %0b\n",
+                unassign, clause_mask, clause_pole, variable[0], variable[1], variable[2], variable[3], variable[4], new_val, implied_variable, is_unit_clause);
 
         $display("\nReset Test");
         // Reset test
@@ -60,7 +60,7 @@ module unit_clause_evaluator_test;
         #10;
 
         // Only 1 assigned
-        $display("\n Test 1  Expected new_assignment = 0 implied_variable = var1 is_unit_clause = 1");
+        $display("\n Test 1  Expected new_val = 1 implied_variable = var5 is_unit_clause = 1");
         unassign = 5'b10000;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
@@ -70,10 +70,21 @@ module unit_clause_evaluator_test;
 
         #10;
         
-        $display("\n Test 2  Expected new_assignment = 1 implied_variable = var1 is_unit_clause = 1");
+        $display("\n Test 2  Expected new_val = 0 implied_variable = var5 is_unit_clause = 1");
         unassign = 5'b10000;
         clause_mask = 5'b11111;
         clause_pole = 5'b11111;
+        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+            variable[i] = $random;
+        end
+
+        #10;
+
+        // Only 1 assigned
+        $display("\n Test 1  Expected new_val = 1 implied_variable = var3 is_unit_clause = 1");
+        unassign = 5'b00100;
+        clause_mask = 5'b11110;
+        clause_pole = 5'b00000;
         for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end

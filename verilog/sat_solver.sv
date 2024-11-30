@@ -7,7 +7,7 @@ module partial_sat_evaluator # (
     )(
     input           [VAR_PER_CLAUSE_INDEX:0] unassign,
     input           [VAR_PER_CLAUSE_INDEX:0] clause_mask,
-    input           [VAR_PER_CLAUSE_INDEX:0] assignment,
+    input           [VAR_PER_CLAUSE_INDEX:0] val,
     input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
     output logic    partial_sat    
 );
@@ -21,7 +21,7 @@ module partial_sat_evaluator # (
 
     // TODO: check if these should be nonblocking <= or assign statments
     for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
-        assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & ~(assignment[i] & clause_pole[i]);
+        assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & ~(val[i] & clause_pole[i]);
     end
 
     // or_inputs is a packed array so this will OR all of the values in it
@@ -40,7 +40,7 @@ module unit_clause_evaluator # (
     input           [VAR_PER_CLAUSE_INDEX:0] clause_mask,
     input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
     input           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable,
-    output logic    new_assignment,
+    output logic    new_val,
     output logic    [VAR_PER_CLAUSE_INDEX:0] implied_variable,
     output logic    is_unit_clause
 );
@@ -67,7 +67,7 @@ module unit_clause_evaluator # (
             5'b00100 : mux_input = 3'b010;
             5'b01000: mux_input = 3'b011;
             5'b10000 : mux_input = 3'b100;
-            default : mux_input = 3'b111;        // Don't select any variable and its assignment
+            default : mux_input = 3'b111;        // Don't select any variable and its val
         endcase
     end
     
@@ -76,5 +76,5 @@ module unit_clause_evaluator # (
 
     // Select the variable to be assigned
     assign implied_variable = is_unit_clause ? 0 : variable[mux_input];
-    assign new_assignment = is_unit_clause ? 0 : clause_pole[mux_input];
+    assign new_val = is_unit_clause ? 0 : ~clause_pole[mux_input];
 endmodule
