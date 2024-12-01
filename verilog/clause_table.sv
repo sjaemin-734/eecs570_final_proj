@@ -41,7 +41,7 @@ module clause_table(
       end else if (read & index_in >= table_ptr) begin
             error = 1;
       end else begin
-            clause_index_out = {`MAX_CLAUSES_BITS{0'b0}};
+            clause_index_out = {`MAX_CLAUSES_BITS{1'b0}};
             error = 0;
       end
     end
