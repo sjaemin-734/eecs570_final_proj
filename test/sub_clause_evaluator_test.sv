@@ -1,31 +1,23 @@
+`include "sysdef.svh"
 // located in sub_clause_eval.sv
 
 module sub_clause_evaluator_test;
-
-    parameter VAR_PER_CLAUSE = 5;
-    parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1;
-    parameter NUM_VARIABLE = 128;
-    parameter VARIABLE_INDEX = 7 - 1;
-
     // clock
     logic           clock;
 
     // Inputs
-    logic           [VAR_PER_CLAUSE_INDEX:0] unassign;
-    logic           [VAR_PER_CLAUSE_INDEX:0] clause_mask;
-    logic           [VAR_PER_CLAUSE_INDEX:0] clause_pole;
-    logic           [VAR_PER_CLAUSE_INDEX:0] val;
-    logic           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable;
+    logic           [`VAR_PER_CLAUSE-1:0] unassign;
+    logic           [`VAR_PER_CLAUSE-1:0] clause_mask;
+    logic           [`VAR_PER_CLAUSE-1:0] clause_pole;
+    logic           [`VAR_PER_CLAUSE-1:0] val;
+    logic           [`VAR_PER_CLAUSE-1:0][`MAX_VARS_BITS-1:0] variable;
 
     // Outputs
     logic           new_val;
-    logic           [VARIABLE_INDEX:0] implied_variable;
+    logic           [`MAX_VARS_BITS-1:0] implied_variable;
     logic           unit_clause;
 
-    sub_clause_evaluator #(
-        .VAR_PER_CLAUSE(VAR_PER_CLAUSE),
-        .NUM_VARIABLE(NUM_VARIABLE)
-    ) DUT (
+    sub_clause_evaluator DUT (
         .unassign(unassign),
         .clause_mask(clause_mask),
         .clause_pole(clause_pole),
@@ -56,7 +48,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b00000;
         clause_pole = 5'b00000;
         val = 5'b00000;
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = 0;
         end
 
@@ -68,7 +60,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
         val = 5'b00000; 
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
@@ -79,7 +71,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11111;
         clause_pole = 5'b10000;
         val = 5'b00000; 
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
@@ -91,7 +83,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11110;
         clause_pole = 5'b00000;
         val = 5'b00000;
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
@@ -103,7 +95,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
         val = 5'b11110;
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
@@ -114,7 +106,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
         val = 5'b00010;
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 
@@ -126,7 +118,7 @@ module sub_clause_evaluator_test;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;
         val = 5'b00000;
-        for(integer i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+        for(integer i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
             variable[i] = $random;
         end
 

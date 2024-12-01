@@ -1,26 +1,25 @@
+`include "sysdef.svh"
 // 5 variables per clause, 1023 clauses
+// TODO: OBSOLETE, modules are stored with sub clause evaluator
 
 // Partial SAT Evaluator
-module partial_sat_evaluator # (
-    parameter VAR_PER_CLAUSE = 5,
-    parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1
-    )(
-    input           [VAR_PER_CLAUSE_INDEX:0] unassign,
-    input           [VAR_PER_CLAUSE_INDEX:0] clause_mask,
-    input           [VAR_PER_CLAUSE_INDEX:0] val,
-    input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
+module partial_sat_evaluator (
+    input           [`VAR_PER_CLAUSE-1:0] unassign,
+    input           [`VAR_PER_CLAUSE-1:0] clause_mask,
+    input           [`VAR_PER_CLAUSE-1:0] val,
+    input           [`VAR_PER_CLAUSE-1:0] clause_pole,
     output logic    partial_sat    
 );
     // Intermediate values that feed into the OR
     // gate in the partial_sat module
-    logic [VAR_PER_CLAUSE_INDEX:0] or_inputs;
+    logic [`VAR_PER_CLAUSE-1:0] or_inputs;
     genvar i;
 
     // Since we're dealing with indiviual bits here, bitwise (&) and logical (&&)
     // operators should be interchangable. For consistency, stick to bitwise.
 
     // TODO: check if these should be nonblocking <= or assign statments
-    for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+    for(i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
         assign or_inputs[i] = (~unassign[i] & clause_mask[i]) & (val[i] ^ clause_pole[i]);
     end
 
@@ -30,22 +29,17 @@ module partial_sat_evaluator # (
 endmodule
 
 // Unit Clause valuator
-module unit_clause_evaluator # (
-    parameter VAR_PER_CLAUSE = 5,
-    parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1,
-    parameter NUM_VARIABLE = 128,
-    parameter VARIABLE_INDEX = 7-1
-    )(
-    input           [VAR_PER_CLAUSE_INDEX:0] unassign,
-    input           [VAR_PER_CLAUSE_INDEX:0] clause_mask,
-    input           [VAR_PER_CLAUSE_INDEX:0] clause_pole,
-    input           [VAR_PER_CLAUSE_INDEX:0][VARIABLE_INDEX:0] variable,
+module unit_clause_evaluator (
+    input           [`VAR_PER_CLAUSE-1:0] unassign,
+    input           [`VAR_PER_CLAUSE-1:0] clause_mask,
+    input           [`VAR_PER_CLAUSE-1:0] clause_pole,
+    input           [`VAR_PER_CLAUSE-1:0][`MAX_VARS_BITS-1:0] variable,
     output logic    new_val,
-    output logic    [VARIABLE_INDEX:0] implied_variable,
+    output logic    [`MAX_VARS_BITS:0] implied_variable,
     output logic    is_unit_clause
 );
     // Intermediate values that feed into the encoder
-    logic [VAR_PER_CLAUSE_INDEX:0] encoder_inputs;
+    logic [`VAR_PER_CLAUSE-1:0] encoder_inputs;
     logic [2:0] mux_input;
 
     genvar i;
@@ -54,7 +48,7 @@ module unit_clause_evaluator # (
     // operators should be interchangable. For consistency, stick to bitwise.
 
     // TODO: check if these should be nonblocking <= or assign statments
-    for(i = 0; i < VAR_PER_CLAUSE; i = i + 1) begin
+    for(i = 0; i < `VAR_PER_CLAUSE; i = i + 1) begin
         assign encoder_inputs[i] = unassign[i] & clause_mask[i];
     end
 

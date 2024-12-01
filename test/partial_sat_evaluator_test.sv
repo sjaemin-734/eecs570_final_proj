@@ -1,25 +1,21 @@
-// located in sat_solver.sv TODO: WE SHOULD RENAME THIS FILE
+`include "sysdef.svh"
+// located in sub_clause_eval.sv
 
 module partial_sat_evaluator_test;
-
-    parameter VAR_PER_CLAUSE = 5;
-    parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1;
 
     // clock
     logic clock;
     
     // Inputs
-    logic           [VAR_PER_CLAUSE_INDEX:0] unassign;
-    logic           [VAR_PER_CLAUSE_INDEX:0] clause_mask;
-    logic           [VAR_PER_CLAUSE_INDEX:0] val;
-    logic           [VAR_PER_CLAUSE_INDEX:0] clause_pole;
+    logic           [`VAR_PER_CLAUSE-1:0] unassign;
+    logic           [`VAR_PER_CLAUSE-1:0] clause_mask;
+    logic           [`VAR_PER_CLAUSE-1:0] val;
+    logic           [`VAR_PER_CLAUSE-1:0] clause_pole;
     
     // Outputs
     logic    partial_sat;
 
-    partial_sat_evaluator #(
-        .VAR_PER_CLAUSE(VAR_PER_CLAUSE)
-    ) DUT (
+    partial_sat_evaluator DUT (
         .unassign(unassign),
         .clause_mask(clause_mask),
         .val(val),
