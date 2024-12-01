@@ -83,6 +83,6 @@ if DEBUG:
 else:
     for i in range(len(clause_db)):
         binary_list = [f"{bits:0{N_SAT}b}" for bits in clause_db[i][:2]]
-        binary_list += [f"{var:0{N_SAT}b}" for var in clause_db[i][2:]]
+        binary_list += [f"{var:0{BITS}b}" for var in clause_db[i][2:]]
         binary_string = ''.join(binary_list)
         print(binary_string)
