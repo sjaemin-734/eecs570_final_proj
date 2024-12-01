@@ -1,23 +1,24 @@
-
 // To use this as an imply stack, tie type_in to 1.
 // To use this as a trace table, leave everything as is.
-module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
+
+`include "sysdefs.svh"
+module stack (
     input                                clock,
     input                                reset,
     input                                push,
     input                                pop,
     input                                type_in, //  Decide = 0, Forced = 1 
     input                                val_in,
-    input        [VARIABLE_INDEXES-1:0]  var_in,
+    input        [`MAX_VARS_BITS-1:0]  var_in,
     output logic                         type_out,
     output logic                         val_out,
-    output logic [VARIABLE_INDEXES-1:0]  var_out,           
+    output logic [`MAX_VARS_BITS-1:0]  var_out,           
     output logic                         empty,
     output logic                         full
 );
 
-    logic [(NUM_VARIABLE-1):0][VARIABLE_INDEXES+1:0] stack ; // 2 extra bits for val and type
-    logic [$clog2(NUM_VARIABLE):0]  stack_ptr;
+    logic [(`MAX_VARS-1):0][`MAX_VARS_BITS+1:0] stack ; // 2 extra bits for val and type
+    logic [$clog2(`MAX_VARS):0]  stack_ptr;
 
     always_ff @(posedge clock) begin
         if (reset) begin
@@ -31,7 +32,7 @@ module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
                 stack_ptr        <= stack_ptr + 1;
                 empty            <= 0;
 
-                if (stack_ptr == NUM_VARIABLE - 1) begin
+                if (stack_ptr == `MAX_VARS - 1) begin
                     full <= 1;
                 end
 
@@ -48,13 +49,13 @@ module stack #(parameter VARIABLE_INDEXES = 8, parameter NUM_VARIABLE = 128)(
 
     always_comb begin
       if (!empty & pop) begin
-            type_out = stack[stack_ptr][VARIABLE_INDEXES+1];
-            val_out = stack[stack_ptr][VARIABLE_INDEXES];
-            var_out = stack[stack_ptr][VARIABLE_INDEXES-1:0];
+            type_out = stack[stack_ptr][`MAX_VARS_BITS+1];
+            val_out = stack[stack_ptr][`MAX_VARS_BITS];
+            var_out = stack[stack_ptr][`MAX_VARS_BITS-1:0];
       end else begin
             type_out = 1'b0;
             val_out = 1'b0;
-            var_out = {VARIABLE_INDEXES{1'b0}};
+            var_out = {`MAX_VARS_BITS{1'b0}};
       end
     end
 

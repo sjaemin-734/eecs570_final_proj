@@ -1,7 +1,6 @@
-module stack_test;
+`include "sysdefs.svh"
 
-    parameter VARIABLE_INDEXES = 128;
-    parameter NUM_VARIABLE = 8;
+module stack_test;
 
     // Inputs
     logic clock;
@@ -10,19 +9,16 @@ module stack_test;
     logic pop;
     logic type_in;
     logic val_in;
-    logic [VARIABLE_INDEXES-1:0] var_in;
+    logic [`MAX_VARS_BITS-1:0] var_in;
 
     // Outputs
-    logic [VARIABLE_INDEXES-1:0] var_out;
+    logic [`MAX_VARS_BITS-1:0] var_out;
     logic type_out;
     logic val_out;
     logic empty;
     logic full;
 
-    stack #(
-        .VARIABLE_INDEXES(VARIABLE_INDEXES),
-        .NUM_VARIABLE(NUM_VARIABLE)
-    ) DUT (
+    stack DUT (
         .clock(clock),
         .reset(reset),
         .push(push),

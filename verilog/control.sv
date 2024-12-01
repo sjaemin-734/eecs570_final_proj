@@ -1,11 +1,8 @@
+`include "sysdefs.svh"
 `include "verilog/stack.sv"
 
 // control module
-module control # (
-    parameter NUM_VARIABLE = 128,
-    parameter VARIABLE_INDEX = 7-1,
-    parameter VAR_PER_CLAUSE = 5
-)(
+module control (
     input clock,
     input reset,
     input start,
@@ -17,7 +14,7 @@ module control # (
 enum logic [3:0]{
     IDLE,
     FIND_NEXT,
-    DECICE,
+    DECIDE,
     BCP_INIT,
     BCP_CORE,
     BACKPROP,
@@ -32,12 +29,12 @@ logic conflict;
 
 // Propogate variable + type + value
 logic prop_val;
-logic [VARIABLE_INDEX:0] prop_var;
+logic [`MAX_VARS_BITS:0] prop_var;
 logic prop_type;
 
 // Update variable + type + value
 logic update_val;
-logic [VARIABLE_INDEX:0] update_var;
+logic [`MAX_VARS_BITS:0] update_var;
 logic update_type;
 
 // Imply Table variables
@@ -56,7 +53,7 @@ always_comb begin
         conflict = 1'b0;
         prop_val = 1'b0;
         prop_type = 1'b0;
-        prop_var = {VARIABLE_INDEX{1'b0}};
+        prop_var = {`MAX_VARS_BITS{1'b0}};
         sat = 1'b0;
         unsat = 1'b0;
     end
@@ -70,10 +67,7 @@ always_comb begin
     endcase
 end
 
-stack #(
-        .VARIABLE_INDEXES(VARIABLE_INDEX),              // TODO: SYNC THIS VARIABLE
-        .NUM_VARIABLE(NUM_VARIABLE)
-) imply_stack (
+stack imply_stack (
         .clock(clock),
         .reset(conflict),                               // TODO: Is Conflict Module doing this?
         .pop(pop_imply),
@@ -87,10 +81,7 @@ stack #(
         .full(full_imply)
     );
 
-stack #(
-        .VARIABLE_INDEXES(VARIABLE_INDEX),              // TODO: SYNC THIS VARIABLE
-        .NUM_VARIABLE(NUM_VARIABLE)
-) trace_stack (
+stack trace_stack (
         .clock(clock),
         .reset(reset),
         .push(push_trace),
@@ -124,14 +115,14 @@ always_ff @(posedge clock) begin
         FIND_NEXT: begin
             pop_imply <= 0'b0;
             if (empty_imply) begin
-                next_state <= DECICE;
+                next_state <= DECIDE;
             end else begin
                 push_trace <= 0'b1;
                 // TODO:Update Var State Table with unassign = 0 & val = prop_val
                 next_state <= BCP_INIT;
             end
         end
-        DECICE: begin
+        DECIDE: begin
             push_trace <= 0'b1;
             // TODO:decide module gives prop_var, prop_val, prop_type (D)
             // TODO:Update Var State Table with unassign = 0 & val = prop_val

@@ -1,6 +1,6 @@
+`include "sysdefs.svh"
+
 module control_test;
-    parameter NUM_VARIABLE = 128;
-    parameter VARIABLE_INDEX = 7-1;
 
     // Inputs
     logic clock;
@@ -11,10 +11,7 @@ module control_test;
     logic sat;
     logic unsat;
 
-    control #(
-        .VARIABLE_INDEX(VARIABLE_INDEX),
-        .NUM_VARIABLE(NUM_VARIABLE)
-    ) DUT (
+    control DUT (
         .clock(clock),
         .reset(reset),
         .start(start),
