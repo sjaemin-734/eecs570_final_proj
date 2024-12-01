@@ -12,10 +12,18 @@ if len(sys.argv) < 1:
     print("Error: no file specified!")
     exit(1)
 
+# Create directory for processed files if it doesn't exist yet
+os.makedirs("preprocessed", exist_ok=True)
+
 filename = str(sys.argv[1])
 print(filename)
 file = open(filename, 'r')
 num_vars, num_clauses = None, None
+
+# Set up output files
+basefile = os.path.basename(filename)    # Remove path
+basefile = basefile.split(".")[0]  # Remove file extension from input file
+write_clause_database = open(f"preprocessed/{basefile}_clause_database.txt", "w+")
 
 # clause_db format:
 # Mask[5], Pole[5], Var[5:1][9]
@@ -85,4 +93,9 @@ else:
         binary_list = [f"{bits:0{N_SAT}b}" for bits in clause_db[i][:2]]
         binary_list += [f"{var:0{BITS}b}" for var in clause_db[i][2:]]
         binary_string = ''.join(binary_list)
-        print(binary_string)
+        # print(binary_string) # Debug
+        write_clause_database.write(f"{binary_string}\n")
+        
+# Close files
+file.close()
+write_clause_database.close()
