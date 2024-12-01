@@ -7,13 +7,13 @@ module var_start_end_test;
     logic reset;
     logic read;
     logic write;
-    logic start_in;
-    logic end_in;
+    logic [`CLAUSE_TABLE_BITS-1:0] start_in;
+    logic [`CLAUSE_TABLE_BITS-1:0] end_in;
     logic [`MAX_VARS_BITS-1:0] var_in;
 
     // Outputs
-    logic start_out;
-    logic end_out;
+    logic [`CLAUSE_TABLE_BITS-1:0] start_out;
+    logic [`CLAUSE_TABLE_BITS-1:0] end_out;
 
     var_start_end DUT (
         .clock(clock),
@@ -36,8 +36,8 @@ module var_start_end_test;
     // Test sequence
     initial begin  
 
-        $monitor("INPUTS: reset = %0d read = %0b write %0b start_in = %0b end_in %0b var_in = %0d \
-                \nOUTPUTS: start_out = %0b end_out = %0b\n",
+        $monitor("INPUTS: reset = %0d read = %0b write %0b start_in = %0d end_in %0d var_in = %0d \
+                \nOUTPUTS: start_out = %0d end_out = %0d\n",
                 reset, read, write, start_in, end_in, var_in, start_out, end_out);
 
         $display("\nReset Test");
