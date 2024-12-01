@@ -2,7 +2,8 @@
 
 module decider_test;
 
-    config_var [`MAX_VARS-1:0] dec_config; // List of variable indices and their decision values
+    config_var dec_config; // List of variable indices and their decision values
+    logic writemem;
     logic read;
     logic write;
     logic [`MAX_VARS_BITS-1:0] back_dec_idx; // Used by the Control when backtracking
@@ -13,9 +14,12 @@ module decider_test;
     logic [`MAX_VARS_BITS-1:0] var_idx_out;
     logic  val_out;
 
+    logic mem_output = 1;
+
 
     decider DUT(
         .dec_config(dec_config), // List of variable indices and their decision values
+        .writemem(writemem),
         .read(read),
         .write(write),
         .back_dec_idx(back_dec_idx), // Used by the Control when backtracking
@@ -39,22 +43,20 @@ module decider_test;
     // Output
     always @(posedge clock) begin
             #1// if (!correct) begin
+            if (mem_output) begin
+                $display("counter: %d\n", counter);
+            end
+            else begin
+                $display("dec_idx_out: %d\n", dec_idx_out);
 
-            $display("dec_idx_out: %d\n", dec_idx_out);
-
-            $display("var_idx_out: %d\n", var_idx_out);
-            $display("val_out: %d\n", val_out);
+                $display("var_idx_out: %d\n", var_idx_out);
+                $display("val_out: %d\n", val_out);
+            end
 
         // end
     end
 
     initial begin
-        
-        for (integer i=0; i < `MAX_VARS; i++) begin
-            dec_config[i].var_idx = counter;
-            dec_config[i].val = counter[0];
-            counter = counter + 1'b1;
-        end
 
         $display("Begin decider_test");
         reset = 1;
@@ -67,7 +69,20 @@ module decider_test;
         
         reset = 0;
 
+        $display("-1. Populate config");
+
+        writemem = 1;
+        for (integer i=0; i < `MAX_VARS; i++) begin
+            dec_config.var_idx = counter;
+            dec_config.val = counter[0];
+            counter = counter + 1'b1;
+            @(negedge clock);
+        end
+        writemem = 0;
+        mem_output = 0;
+
         $display("0. Read the data, should be incrementing and the val should be if it's odd or not (in this case)");
+
         read = 1;
 
         @(negedge clock);
