@@ -1,4 +1,4 @@
-`include "sysdef.svh"
+`include "sysdefs.svh"
 
 // Sub Clause Evaluator
 module sub_clause_evaluator # (
@@ -75,7 +75,7 @@ module unit_clause_evaluator (
     input           [`VAR_PER_CLAUSE-1:0] clause_pole,
     input           [`VAR_PER_CLAUSE-1:0][`MAX_VARS_BITS-1:0] variable,
     output logic    new_val,
-    output logic    [`MAX_VARS_BITS:0] implied_variable,
+    output logic    [`MAX_VARS_BITS-1:0] implied_variable,
     output logic    is_unit_clause
 );
     // Intermediate values that feed into the encoder

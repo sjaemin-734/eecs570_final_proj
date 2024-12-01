@@ -1,4 +1,4 @@
-`include "sysdef.svh"
+`include "sysdefs.svh"
 // located in sub_clause_eval.sv
 
 module sub_clause_evaluator_test;
