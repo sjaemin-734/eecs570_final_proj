@@ -77,6 +77,11 @@ while True:
         for j in range(N_SAT-1, N_SAT-i, -1):
             clause_db[clause_num-1][0] ^= (1 << j)
 
+        # Adding additional bits to ensure that final width is correct
+        # and consistent with N-SAT
+        for j in range(i, N_SAT):
+            clause_db[clause_num-1].append(0)
+
         if DEBUG:
             # Changing mask and poles into binary representation (for checking)
             clause_db[clause_num-1][0] = bin(clause_db[clause_num-1][0])[2:].zfill(N_SAT)
