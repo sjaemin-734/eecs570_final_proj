@@ -40,9 +40,10 @@ MAX_CLAUSE_TABLE_BITS = math.ceil(math.log2(MAX_CLAUSE_TABLE))
 read_file = str(sys.argv[1])
 read_handler = open(read_file, "r")
 # Set up output files
-basename = read_file.split(".")[0]  # Remove file extension from input file
-write_clause_table = open(f"preprocessed/{basename}_clause_table.txt", "w+")
-write_var_start_end_table = open(f"preprocessed/{basename}_var_start_end_table.txt", "w+")
+basefile = os.path.basename(sys.argv[1])    # Remove path
+basefile = basefile.split(".")[0]  # Remove file extension from input file
+write_clause_table = open(f"preprocessed/{basefile}_clause_table.txt", "w+")
+write_var_start_end_table = open(f"preprocessed/{basefile}_var_start_end_table.txt", "w+")
 
 num_vars = 0
 num_clauses = 0
