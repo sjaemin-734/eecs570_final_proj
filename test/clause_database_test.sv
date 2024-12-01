@@ -44,10 +44,10 @@ module clause_database_test;
     // Test sequence
     initial begin  
 
-        $monitor("INPUTS: reset = %0d push = %0b read = %0b mask_in = %0b pole_in = %0b 
+        $monitor("INPUTS: reset = %0d push = %0b read = %0b mask_in = %0b pole_in = %0b \
+                \nvar1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d index_in = %0d \
+                \nOUTPUTS: mask_out = %0b pole_out = %0b \
                 \nvar1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d \
-                \nOUTPUTS: mask_out = %0b pole_out = %0b 
-                \nvar1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d 
                 \nfull = %0b error = %0b\n",
                 reset, push, read, mask_in, pole_in,
                 var_in[0], var_in[1], var_in[2], var_in[3], var_in[4],
@@ -81,7 +81,7 @@ module clause_database_test;
             push = 1;
             for(integer j = 0; j < `VAR_PER_CLAUSE; j = j + 1) begin
                 mask_in[j] = $random;
-                if mask_in[j] begin
+                if (mask_in[j]) begin
                     pole_in[j] = $random;
                     var_in[j] = $random;
                 end else begin

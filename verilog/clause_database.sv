@@ -20,7 +20,7 @@ module clause_database(
 
     logic [(`MAX_CLAUSES-1):0][`CLAUSE_DATA_BITS-1:0] clause_database;      // stores clause info [mask [5], pole[5], var_id [5][`MAX_VAR_BITS]]
     logic [`MAX_CLAUSES_BITS-1:0]  table_ptr;
-    logic [(`MAX_VAR_BITS*`VAR_PER_CLAUSE - 1):0] var_line;
+    logic [(`MAX_VARS_BITS*`VAR_PER_CLAUSE - 1):0] var_line;
 
     always_ff @(posedge clock) begin
         if (reset) begin
@@ -42,18 +42,21 @@ module clause_database(
     always_comb begin
       if (read & index_in < table_ptr) begin
             error = 0;
-            mask_out = clause_database[`CLAUSE_DATA_BITS-1:`CLAUSE_DATA_BITS-5];
-            pole_out = clause_database[`CLAUSE_DATA_BITS-6:`CLAUSE_DATA_BITS-10];
-            for (integer i = 0; i < `VAR_PER_CLAUSE; i = i+1) begin
-                var_out[i] = clause_database[`MAX_VARS_BITS*i - 1:`MAX_VARS_BITS*i];
-            end 
+            mask_out = clause_database[index_in][`CLAUSE_DATA_BITS-1:`CLAUSE_DATA_BITS-5];
+            pole_out = clause_database[index_in][`CLAUSE_DATA_BITS-6:`CLAUSE_DATA_BITS-10];
+            var_out[0] = clause_database[index_in][`MAX_VARS_BITS - 1:0];
+            var_out[1] = clause_database[index_in][`MAX_VARS_BITS*2 - 1:`MAX_VARS_BITS];
+            var_out[2] = clause_database[index_in][`MAX_VARS_BITS*3 - 1:`MAX_VARS_BITS*2];
+            var_out[3] = clause_database[index_in][`MAX_VARS_BITS*4 - 1:`MAX_VARS_BITS*3];
+            var_out[4] = clause_database[index_in][`MAX_VARS_BITS*5 - 1:`MAX_VARS_BITS*4];
+            
       end else if (read & index_in >= table_ptr) begin
             error = 1;
       end else begin
             mask_out = {`VAR_PER_CLAUSE{1'b0}};
             pole_out = {`VAR_PER_CLAUSE{1'b0}};
             for (integer i = 0; i < `VAR_PER_CLAUSE; i = i+1) begin
-                var_out[i] = {`MAX_VAR_BITS{1'b0}};
+                var_out[i] = {`MAX_VARS_BITS{1'b0}};
             end 
             error = 0;
       end
