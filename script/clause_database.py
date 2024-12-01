@@ -16,7 +16,7 @@ if len(sys.argv) < 1:
 os.makedirs("preprocessed", exist_ok=True)
 
 filename = str(sys.argv[1])
-print(filename)
+# print(filename)
 file = open(filename, 'r')
 num_vars, num_clauses = None, None
 
