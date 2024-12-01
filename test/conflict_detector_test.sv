@@ -2,14 +2,14 @@
 
 module conflict_detector_test;
 
-    logic [MAX_VARS_BITS-1:0] var_idx_in; // Implied Variable
+    logic [`MAX_VARS_BITS-1:0] var_idx_in; // Implied Variable
     logic val_in; // Implied value
     logic clock;
     logic reset;
     logic en;
 
     logic conflict;
-    logic [MAX_VARS_BITS-1:0] var_idx_out;
+    logic [`MAX_VARS_BITS-1:0] var_idx_out;
     logic val_out;
     logic imply_stack_push_en;
 
