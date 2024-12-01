@@ -1,12 +1,7 @@
 `include "sysdefs.svh"
 
 // Sub Clause Evaluator
-module sub_clause_evaluator # (
-    parameter NUM_VARIABLE = 128,
-    parameter VARIABLE_INDEX = 7 - 1,
-    parameter VAR_PER_CLAUSE = 5,
-    parameter VAR_PER_CLAUSE_INDEX = VAR_PER_CLAUSE - 1
-    )(
+module sub_clause_evaluator (
     input           [`VAR_PER_CLAUSE-1:0] unassign,
     input           [`VAR_PER_CLAUSE-1:0] clause_mask,
     input           [`VAR_PER_CLAUSE-1:0] clause_pole,
