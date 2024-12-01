@@ -6,6 +6,7 @@ module sub_clause_evaluator_test;
     logic           clock;
 
     // Inputs
+    logic                                 en;
     logic           [`VAR_PER_CLAUSE-1:0] unassign;
     logic           [`VAR_PER_CLAUSE-1:0] clause_mask;
     logic           [`VAR_PER_CLAUSE-1:0] clause_pole;
@@ -18,6 +19,7 @@ module sub_clause_evaluator_test;
     logic           unit_clause;
 
     sub_clause_evaluator DUT (
+        .en(en),
         .unassign(unassign),
         .clause_mask(clause_mask),
         .clause_pole(clause_pole),
@@ -43,6 +45,7 @@ module sub_clause_evaluator_test;
 
         $display("\nReset Test");
         // Reset test
+        en = 0;
         clock = 0;
         unassign = 5'b11111;
         clause_mask = 5'b00000;
@@ -56,6 +59,7 @@ module sub_clause_evaluator_test;
 
         // Only 1 assigned
         $display("\n Test 1  Expected new_val = 1 implied_variable = var5 unit_clause = 1");
+        en = 1;
         unassign = 5'b10000;
         clause_mask = 5'b11111;
         clause_pole = 5'b00000;

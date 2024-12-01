@@ -1,11 +1,12 @@
 `include "sysdefs.svh"
-`include "verilog/stack.sv"
 
 // control module
 module control (
     input clock,
     input reset,
     input start,
+    input bcp_busy,
+    input empty_imply,
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
     output logic unsat
 );
@@ -38,7 +39,6 @@ logic [`MAX_VARS_BITS:0] update_var;
 logic update_type;
 
 // Imply Table variables
-logic empty_imply;
 logic full_imply;
 logic pop_imply;
 
@@ -66,35 +66,6 @@ always_comb begin
         end
     endcase
 end
-
-stack imply_stack (
-        .clock(clock),
-        .reset(conflict),                               // TODO: Is Conflict Module doing this?
-        .pop(pop_imply),
-        .var_out(prop_var),
-        .type_in(),
-        .val_in(),
-        .var_in(),
-        .type_out(prop_type),
-        .val_out(prop_val),
-        .empty(empty_imply),
-        .full(full_imply)
-    );
-
-stack trace_stack (
-        .clock(clock),
-        .reset(reset),
-        .push(push_trace),
-        .pop(pop_trace),
-        .type_in(prop_type),
-        .val_in(prop_val),
-        .var_in(prop_var),
-        .var_out(update_var),
-        .type_out(update_type),
-        .val_out(update_val),
-        .empty(empty_trace),
-        .full(full_trace)
-    );
 
 
 always_ff @(posedge clock) begin

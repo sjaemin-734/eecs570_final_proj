@@ -2,6 +2,7 @@
 
 // Sub Clause Evaluator
 module sub_clause_evaluator (
+    input                                 en,
     input           [`VAR_PER_CLAUSE-1:0] unassign,
     input           [`VAR_PER_CLAUSE-1:0] clause_mask,
     input           [`VAR_PER_CLAUSE-1:0] clause_pole,
@@ -33,7 +34,7 @@ module sub_clause_evaluator (
         .is_unit_clause(candidate_unit)
     );
 
-    assign unit_clause = ~partial_sat & candidate_unit;
+    assign unit_clause = en & ~partial_sat & candidate_unit;
 
 endmodule
 
