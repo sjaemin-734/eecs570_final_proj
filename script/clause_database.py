@@ -4,6 +4,7 @@ import sys
 # Included these as variables so that they can be changed if needed
 N_SAT = 5
 BITS = 9
+MAX_CLAUSES = 1024
 
 # Debug mode prints the vars in decimal and the masks in binary (in string form)
 DEBUG = False
@@ -89,6 +90,10 @@ while True:
             
         clause_num += 1
 
+# Pad first row of clause db (clause 0 is unused)
+pad_clause_database = "0" * 55 + "\n" # I am so sorry for hard coding this
+write_clause_database.write(pad_clause_database)
+
 if DEBUG:
     for i in range(len(clause_db)):
         print(f"{i+1}: {clause_db[i]}")
@@ -101,6 +106,11 @@ else:
         # print(binary_string) # Debug
         write_clause_database.write(f"{binary_string}\n")
         
+# Pad the remaining area in memory with 0's
+padding_clause_database_bottom = MAX_CLAUSES - len(clause_db) - 1
+for i in range(padding_clause_database_bottom):
+    write_clause_database.write(pad_clause_database)
+
 # Close files
 file.close()
 write_clause_database.close()
