@@ -1,310 +1,202 @@
 `include "sysdefs.svh"
 
-module control_test;
-
-    logic clock;
-    logic reset;
-    logic start;
+// control module
+module control (
+    input clock,
+    input reset,
+    input start,
     // BCP CORE
-    logic bcp_busy;
-    logic conflict;
-    logic [`MAX_CLAUSES_BITS-1:0] bcp_clause_idx;
-    logic reset_bcp;
+    input bcp_busy,
+    input conflict,
+    output logic [`MAX_CLAUSES_BITS-1:0] bcp_clause_idx,
+    output logic reset_bcp,
 
     // IMPLY
-    logic empty_imply;
-    logic full_imply;
-    logic [`MAX_VARS_BITS-1:0] var_out_imply;
-    logic val_out_imply;
-    logic type_out_imply;
-    logic pop_imply;
-    // IMPLY ADDITIONAL (Not for control)
-    logic push_imply;
-    logic [`MAX_VARS_BITS-1:0] var_in_imply;
-    logic val_in_imply;
+    input empty_imply,
+    input [`MAX_VARS_BITS-1:0] var_out_imply,
+    input val_out_imply,
+    input type_out_imply,
+    output logic pop_imply,
     // TRACE
-    logic reset_trace;
-    logic empty_trace;
-    logic full_trace;
-    logic [`MAX_VARS_BITS-1:0] var_out_trace;
-    logic val_out_trace;
-    logic type_out_trace;
-    logic pop_trace;
-    // Connected to test
-    logic [`MAX_VARS_BITS-1:0] var_in_trace_test;
-    logic val_in_trace_test;
-    logic type_in_trace_test;
-    logic push_trace_test;
-    // Connected to control
-    logic [`MAX_VARS_BITS-1:0] var_in_trace_c;
-    logic val_in_trace_c;
-    logic type_in_trace_c;
-    logic push_trace_c;
-
-    logic push_trace;
-    logic [`MAX_VARS_BITS-1:0] var_in_trace;
-    logic val_in_trace;
-    logic type_in_trace;
+    input empty_trace,
+    input [`MAX_VARS_BITS-1:0] var_out_trace,
+    input val_out_trace,
+    input type_out_trace,
+    output logic pop_trace,
+    output logic push_trace,
+    output logic [`MAX_VARS_BITS-1:0] var_in_trace,
+    output logic val_in_trace,
+    output logic type_in_trace,
     // VAR STATE
-    logic write_vs;
-    logic [`MAX_VARS_BITS-1:0] var_in_vs;
-    logic val_in_vs;
-    logic unassign_in_vs;
+    output logic write_vs,
+    output logic [`MAX_VARS_BITS-1:0] var_in_vs,
+    output logic val_in_vs,
+    output logic unassign_in_vs,
     // VAR START END TABLE
-    logic [`MAX_CLAUSES_BITS-1:0] start_clause;
-    logic [`MAX_CLAUSES_BITS-1:0] end_clause;
-    logic read_var_start_end;
-    logic [`MAX_VARS_BITS-1:0] var_in_vse;
+    input [`MAX_CLAUSES_BITS-1:0] start_clause,
+    input [`MAX_CLAUSES_BITS-1:0] end_clause,
+    output logic read_var_start_end,
+    output logic [`MAX_VARS_BITS-1:0] var_in_vse,
+    // DECIDER
+    input logic [`MAX_VARS_BITS-1:0] dec_idx_d,
+    input logic [`MAX_VARS_BITS-1:0] var_idx_d,
+    input logic val_d,
+    output config_var dec_config, // A pair of variable inde and its decision value
+    output writemem_d, // High when getting config data
+    output read_d, // Control is asking for next value
+    output write_d, // Control is replacing dec_idx
+    output [`MAX_VARS_BITS-1:0] back_dec_idx_d, // Used by the Control when backtracking
+    // DECIDER STACK
 
     // SAT Results
-    logic sat;                     // Have separate UNSAT/SAT variable just in case
-    logic unsat;
+    output logic sat,                     // Have separate UNSAT/SAT variable just in case
+    output logic unsat
+);
 
-    control DUT (
-        .clock(clock),
-        .reset(reset),
-        .start(start),
+// state variables
+enum logic [3:0]{
+    IDLE,
+    FIND_NEXT,
+    DECIDE,
+    BCP_INIT,
+    BCP_CORE,
+    BACKPROP,
+    BCP_WAIT,       // CHECK:Is it needed to for another transient state?
+    SAT,
+    UNSAT
+} state;
+logic [3:0] next_state;
 
-        .bcp_busy(bcp_busy),
-        .conflict(conflict),
-        .bcp_clause_idx(bcp_clause_idx),
-        .reset_bcp(reset_bcp),
+// variable to use for BCP
+logic [`MAX_VARS_BITS-1:0] var_in_bcp;
 
-        .empty_imply(empty_imply),
-        .var_out_imply(var_out_imply),
-        .val_out_imply(val_out_imply),
-        .type_out_imply(type_out_imply),
-        .pop_imply(pop_imply),
+// Index through start to end
+logic [`MAX_CLAUSES_BITS-1:0] i;
 
-        .empty_trace(empty_trace),
-        .var_out_trace(var_out_trace),
-        .val_out_trace(val_out_trace),
-        .type_out_trace(type_out_trace),
-        .pop_trace(pop_trace),
-        .push_trace(push_trace_c),
-        .var_in_trace(var_in_trace_c),
-        .val_in_trace(val_in_trace_c),
-        .type_in_trace(type_in_trace_c),
+always_comb begin
+    if (reset) begin
+        sat = 1'b0;
+        unsat = 1'b0;
+    end
+    case(state)
+        SAT: begin
+            sat = 1'b1;
+        end
+        UNSAT:begin
+            unsat = 1'b1;
+        end
+    endcase
+end
 
-        .write_vs(write_vs),
-        .var_in_vs(var_in_vs),
-        .val_in_vs(val_in_vs),
-        .unassign_in_vs(unassign_in_vs),
 
-        .start_clause(start_clause),
-        .end_clause(end_clause),
-        .read_var_start_end(read_var_start_end),
-        .var_in_vse(var_in_vse),
+always_ff @(posedge clock) begin
+    if (reset) begin 
+        state <= BCP_WAIT;
+        next_state = BCP_WAIT;
+        push_trace <= 1'b0;
+        pop_imply <= 1'b0;
+        pop_trace <= 1'b0;
+        write_vs <= 1'b0;
+    end else begin
+        state <= next_state;
+        case(state)
+        IDLE: begin
+            if (start) begin
+                next_state <= FIND_NEXT;
+                pop_imply <= 1'b1;
+            end
+        end
+        FIND_NEXT: begin
+            pop_imply <= 1'b0;
+            if (empty_imply) begin
+                next_state <= DECIDE;
+            end else begin
+                push_trace <= 1'b1;
+                write_vs <= 1'b1;
+                // TODO:Update Var State Table with unassign = 0 & val = val_out_imply
+                unassign_in_vs <= 1'b0;
+                val_in_vs <= val_out_imply;
+                var_in_vs <= var_out_imply;
 
-        .sat(sat),
-        .unsat(unsat)
-    );
+                val_in_trace <= val_out_imply;
+                var_in_trace <= var_out_imply;
+                type_in_trace <= type_out_imply;
 
-    stack imply_stack (
-        .clock(clock),
-        .reset(reset_bcp),
-        .push(push_imply),
-        .pop(pop_imply),
-        .type_in(1'b1),
-        .val_in(val_in_imply),
-        .var_in(var_in_imply),
-        .type_out(type_out_imply),
-        .val_out(val_out_imply),
-        .var_out(var_out_imply),
-        .empty(empty_imply),
-        .full(full_imply)
-    );
+                var_in_bcp <= var_out_imply;
 
-    stack trace_stack (
-        .clock(clock),
-        .reset(reset_trace),
-        .push(push_trace),
-        .pop(pop_trace),
-        .type_in(type_in_trace),
-        .val_in(val_in_trace),
-        .var_in(var_in_trace),
-        .type_out(type_out_trace),
-        .val_out(val_out_trace),
-        .var_out(var_out_trace),
-        .empty(empty_trace),
-        .full(full_trace)
-    );
+                next_state <= BCP_INIT;
+            end
+        end
+        DECIDE: begin
+            push_trace <= 1'b1;
+            // TODO:decide module gives var_out_imply, val_out_imply, type_out_imply (D)
+            // TODO:Update Var State Table with unassign = 0 & val = val_out_imply
+            next_state <= BCP_INIT;
+        end
+        BCP_INIT: begin
+            reset_bcp <= 1'b1;
+            push_trace <= 1'b0;
+            write_vs <= 1'b0;
+            // Receive start and end clause IDs for var_out_imply
+            read_var_start_end <= 1'b1;
+            var_in_vse <= var_in_bcp;
+            i <= 0;
+            next_state <= BCP_CORE;
+        end
+        BCP_CORE: begin
+            read_var_start_end <= 1'b0;
+            bcp_clause_idx <= start_clause + i;
+            if (start_clause + i == end_clause - 1) begin
+                next_state <= BCP_WAIT;
+            end
+            i <= i + 1;         // TODO: Check if this increment messes with previous lines
+            
+        end
+        BACKPROP: begin
+            reset_bcp <= 1'b1;           // TODO: Where & How does this happen? Clearing conflict variable
+            // Send conflict line to Decide Module
 
-    // Clock generation
-    initial begin
-        clock = 0;
-        forever #5 clock = ~clock; // 10 ns clock period
+            //Update Var State table from values coming from popping Trace Table
+            if (empty_trace) begin
+                next_state <= UNSAT;
+                pop_trace <= 1'b0;     // Stop popping from trace table
+            end else if (~type_out_trace) begin
+                pop_trace <= 1'b0;
+                push_trace <= 1'b1;
+                write_vs <= 1'b1;
+
+                unassign_in_vs <= 1'b0;
+                val_in_vs <= ~val_out_trace;
+                var_in_vs <= var_out_trace;
+
+                val_in_trace <= ~val_out_trace;
+                var_in_trace <= var_out_trace;
+                type_in_trace <= 1'b1;
+
+                var_in_bcp <= var_out_trace;
+
+                pop_trace <= 1'b0;
+
+                next_state <= BCP_INIT;
+            end else begin
+                write_vs <= 1'b1;
+                unassign_in_vs <= 1'b1;
+                var_in_vs <= var_out_trace;
+            end
+
+        end
+        BCP_WAIT: begin
+            if (conflict) begin
+                next_state <= BACKPROP;
+                pop_trace <= 1'b1;
+            end else if (~bcp_busy) begin
+                next_state <= FIND_NEXT;
+                pop_imply <= 1'b1;
+            end 
+        end
+        endcase
     end
 
-    task PUSH_TO_IMPLY;
-        input [`MAX_VARS_BITS-1:0] var_in;
-        input val_in;
-        begin
-            push_imply = 1'b1;
-            var_in_imply = var_in;
-            val_in_imply = val_in;
-            @(negedge clock);
-            push_imply = 1'b0;
-            var_in_imply = 0;
-            val_in_imply = 0;
-            @(negedge clock);
-        end
-    endtask
+end
 
-    task PUSH_TO_TRACE;
-        input [`MAX_VARS_BITS-1:0] var_in;
-        input val_in;
-        input type_in;
-        begin
-            push_trace_test = 1'b1;
-            var_in_trace_test = var_in;
-            val_in_trace_test = val_in;
-            type_in_trace_test = type_in;
-            @(negedge clock);
-            push_trace_test = 1'b0;
-            var_in_trace_test = 0;
-            val_in_trace_test = 0;
-            type_in_trace_test = 0;
-            @(negedge clock);
-
-        end
-    endtask
-
-    always @(posedge clock) begin
-        $display("INITIALIZE: reset = %0b start = %0b \
-                \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d \
-                \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
-                \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
-                \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
-                \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
-                \nRESULTS: sat = %0b unsat %0b\n",
-                reset, start, 
-                bcp_busy, conflict, bcp_clause_idx, reset_bcp,
-                empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
-                empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
-                write_vs, var_in_vs, val_in_vs, unassign_in_vs,
-                start_clause, end_clause, read_var_start_end, var_in_vse,
-                sat, unsat);
-    end
-
-
-    always_comb begin
-        if (reset) begin
-            reset_trace = reset;
-        end else begin
-            reset_trace = 0;
-        end
-        push_trace = push_trace_c | push_trace_test;
-        val_in_trace = push_trace_test ? val_in_trace_test : val_in_trace_c;
-        var_in_trace = push_trace_test ? var_in_trace_test : var_in_trace_c;
-        type_in_trace = push_trace_test ? type_in_trace_test : type_in_trace_c;
-    end
-
-    // Test sequence
-    initial begin  
-
-        // $monitor("INITIALIZE: reset = %0b start = %0b \
-        //         \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d \
-        //         \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
-        //         \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
-        //         \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
-        //         \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
-        //         \nRESULTS: sat = %0b unsat %0b\n",
-        //         reset, start, 
-        //         bcp_busy, conflict, bcp_clause_idx, reset_bcp,
-        //         empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
-        //         empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
-        //         write_vs, var_in_vs, val_in_vs, unassign_in_vs,
-        //         start_clause, end_clause, read_var_start_end, var_in_vse,
-        //         sat, unsat);
-
-        $display("\nReset");
-        // Reset test
-        clock = 0;
-        reset = 1;
-
-        @(negedge clock);
-
-        $display("\nStart Solver at BCP WAIT");
-
-        reset = 0;
-        conflict = 0;
-        bcp_busy = 1;
-
-        @(negedge clock);
-
-        bcp_busy = 0;
-
-        @(negedge clock);
-
-        @(negedge clock);
-        $display("\nAttempt to pop imply");
-
-        @(negedge clock);
-        reset = 1;
-        @(negedge clock);
-
-
-        reset = 0;
-        conflict = 1;
-        bcp_busy = 1;
-
-        @(negedge clock);
-
-        bcp_busy = 0;
-
-        for (integer i = 0; i < 4; i = i + 1) begin
-            @(negedge clock);
-        end
-        $display("\nShould see UNSAT above here and attemp to pop trace");
-
-        reset = 1;
-        @(negedge clock);
-        reset = 0;
-        bcp_busy = 1;
-        conflict = 0;
-        for (integer i = 0; i < 3; i = i + 1) begin
-            PUSH_TO_TRACE($random, $random, 1);
-        end
-        PUSH_TO_TRACE($random, $random, 0);
-        @(negedge clock);
-        conflict = 1;
-        bcp_busy = 0;
-
-        @(negedge clock);
-        for (integer i = 0; i < 5; i = i + 1) begin
-            @(negedge clock);
-        end
-
-        $display("\nShould unassign variables above");
-
-        @(negedge clock);
-        $display("\nShould assign variable opposite val and be forced");
-        @(negedge clock);
-        $display("\nShould send var to var start end");
-        @(negedge clock);
-        start_clause = 0;
-        end_clause = 10;
-        bcp_busy = 1;
-
-        for (integer i = 0; i < 13; i = i + 1) begin
-            @(negedge clock);
-        end
-
-        bcp_busy = 0;
-        conflict = 1;
-
-        for (integer i = 0; i < 4; i = i + 1) begin
-            @(negedge clock);
-        end
-        $display("\nShould see unsat again");
-
-        
-
-
-        // Wait until something happens???
-        // TODO: Copy EECS 470 wait till something happens function to put here
-
-        $finish;
-    end
 endmodule
