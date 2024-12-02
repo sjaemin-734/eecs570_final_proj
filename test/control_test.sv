@@ -13,7 +13,7 @@ module control_test;
 
     // IMPLY
     logic empty_imply;
-    logic ['MAX_VARS_BITS-1:0] var_out_imply;
+    logic [`MAX_VARS_BITS-1:0] var_out_imply;
     logic val_out_imply;
     logic type_out_imply;
     logic pop_imply;
@@ -107,6 +107,7 @@ module control_test;
         reset = 0;
         start = 1;
         empty_trace = 1;
+        conflict = 1;
         bcp_busy = 1;
 
         @(negedge clock);

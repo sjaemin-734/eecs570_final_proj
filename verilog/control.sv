@@ -13,7 +13,7 @@ module control (
 
     // IMPLY
     input empty_imply,
-    input ['MAX_VARS_BITS-1:0] var_out_imply,
+    input [`MAX_VARS_BITS-1:0] var_out_imply,
     input val_out_imply,
     input type_out_imply,
     output logic pop_imply,
@@ -37,6 +37,8 @@ module control (
     input [`MAX_CLAUSES_BITS-1:0] end_clause,
     output logic read_var_start_end,
     output logic [`MAX_VARS_BITS-1:0] var_in_vse,
+    // DECIDE
+    // 
 
     // SAT Results
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
@@ -65,7 +67,6 @@ logic [`MAX_CLAUSES_BITS-1:0] i;
 
 always_comb begin
     if (reset) begin
-        var_in_bcp = {`MAX_VARS_BITS{1'b0}};
         sat = 1'b0;
         unsat = 1'b0;
     end
@@ -147,7 +148,6 @@ always_ff @(posedge clock) begin
             unassign_in_vs <= 1'b1;
 
             //Update Var State table from values coming from popping Trace Table
-            end
             if (empty_trace) begin
                 next_state <= UNSAT;
                 pop_trace <= 1'b0;     // Stop popping from trace table
