@@ -52,7 +52,13 @@ for var in range(1, num_vars+1):
     # Convert var and random_decision to binary
     var_idx_binary = f"{var:0{MAX_VARS_BITS}b}"
     write_decider.write(f"{var_idx_binary}{random_decision}\n")
-    
+
+# Pad the remaining area in memory with 0's
+pad_decider = "0" * MAX_VARS_BITS + "\n"
+padding_decider_bottom = MAX_VARS - num_vars
+for i in range(padding_decider_bottom):
+    write_decider.write(pad_decider)
+
 # Close files
 read_handler.close()
 write_decider.close()
