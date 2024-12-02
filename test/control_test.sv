@@ -91,9 +91,20 @@ module control_test;
     // Test sequence
     initial begin  
 
-        $monitor("INPUTS: reset = %0b start = %0b \
-                \nOUTPUTS: sat = %0b unsat %0b\n",
-                reset, start, sat, unsat);
+        $monitor("INITIALIZE: reset = %0b start = %0b \
+                \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d \
+                \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
+                \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
+                \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
+                \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
+                \nRESULTS: sat = %0b unsat %0b\n",
+                reset, start, 
+                bcp_busy, conflict, bcp_clause_idx, reset_bcp,
+                empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
+                empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
+                write_vs, var_in_vs, val_in_vs, unassign_in_vs,
+                start_clause, end_clause, read_var_start_end, var_in_vse,
+                sat, unsat);
 
         $display("\nReset");
         // Reset test
