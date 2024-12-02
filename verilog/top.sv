@@ -1,4 +1,10 @@
 `include "sysdefs.svh"
+`include "verilog/control.sv"
+`include "verilog/stack.sv"
+`include "verilog/decider.sv"
+`include "verilog/sub_clause_eval.sv"
+`include "verilog/decider_stack.sv"
+`include "verilog/var_state.sv"
 
 // top level module
 
@@ -12,10 +18,29 @@ module top(
 );
 
     // control variables
+    // input
     logic reset_c;
+    logic bcp_busy;
+    // output
     logic sat_c;
     logic unsat_c;
-    logic bcp_busy;
+
+    // Var State variables
+    // inputs
+    logic reset_vs;
+    logic read_vs;
+    // logic multi_read;
+    logic write_vs;
+    logic val_in_vs;
+    logic unassign_in_vs;
+    // Used by both
+    logic [`MAX_VARS_BITS - 1:0] var_in_vs;
+    // logic [VAR_PER_CLAUSE - 1:0][MAX_VARS_BITS - 1:0]   data_in;
+    // outputs
+    logic val_out_vs;
+    logic unassign_out_vs;
+    // logic [VAR_PER_CLAUSE - 1:0][1:0] data_out;
+
 
     // Decider variables
     // inputs
@@ -32,7 +57,6 @@ module top(
 
     // Decider stack variables
     // inputs
-    logic clock;
     logic reset_ds;
     logic push_ds;
     logic pop_ds;
@@ -117,6 +141,17 @@ module top(
         .val_out(val_out_d)
     );
 
+    decider_stack decide_stack (
+        .clock(clock),
+        .reset(reset_ds),
+        .push(push_ds),
+        .pop(pop_ds),
+        .dec_idx_in(dec_idx_in_ds),
+
+        .dec_idx_out(dec_idx_out_ds),
+        .empty(empty_ds)
+    );
+
     sub_clause_evaluator ce (
         .en(en_ce),
         .unassign(unassign_ce),
@@ -139,17 +174,6 @@ module top(
         .var_idx_out(var_in_imply),
         .val_out(val_in_imply),
         .imply_stack_push_en(push_imply)
-    );
-
-    decider_stack decide_stack (
-        .clock(clock),
-        .reset(reset_ds),
-        .push(push_ds),
-        .pop(pop_ds),
-        .dec_idx_in(dec_idx_in_ds),
-
-        .dec_idx_out(dec_idx_out_ds),
-        .empty(empty_ds)
     );
 
     stack imply_stack (
@@ -180,6 +204,18 @@ module top(
         .var_out(var_out_trace),
         .empty(empty_trace),
         .full(full_trace)
+    );
+
+    var_state var_state_table (
+        .clock(clock),
+        .reset(reset_vs),
+        .read(read_vs),
+        .write(write_vs),
+        .val_in(val_in_vs),
+        .unassign_in(unassign_in_vs),
+        .var_in(var_in_vs),
+        .val_out(val_out_vs),
+        .unassign_out(unassign_out_vs)
     );
 
 
