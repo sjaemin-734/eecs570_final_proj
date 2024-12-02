@@ -124,6 +124,7 @@ module control_test;
         bcp_busy = 0;
 
         @(negedge clock);
+        @(negedge clock);
         $display("\nAttempt to pop imply");
 
         @(negedge clock);
@@ -146,13 +147,15 @@ module control_test;
         $display("\nShould see UNSAT above here and attemp to pop trace");
 
         reset = 1;
+        empty_trace = 0;
         @(negedge clock);
         reset = 0;
         bcp_busy = 1;
         conflict = 1;
 
-        empty_trace = 0;
         type_out_trace = 1;
+
+        @(negedge clock);
 
         for(integer i = 0; i < 5; i = i + 1) begin
             var_out_trace = $random;

@@ -37,8 +37,16 @@ module control (
     input [`MAX_CLAUSES_BITS-1:0] end_clause,
     output logic read_var_start_end,
     output logic [`MAX_VARS_BITS-1:0] var_in_vse,
-    // DECIDE
-    // 
+    // DECIDER
+    input logic [`MAX_VARS_BITS-1:0] dec_idx_d,
+    input logic [`MAX_VARS_BITS-1:0] var_idx_d,
+    input logic val_d,
+    output config_var dec_config, // A pair of variable inde and its decision value
+    output writemem_d, // High when getting config data
+    output read_d, // Control is asking for next value
+    output write_d, // Control is replacing dec_idx
+    output [`MAX_VARS_BITS-1:0] back_dec_idx_d, // Used by the Control when backtracking
+    // DECIDER STACK
 
     // SAT Results
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
@@ -84,9 +92,11 @@ end
 always_ff @(posedge clock) begin
     if (reset) begin 
         state <= BCP_WAIT;
+        next_state = BCP_WAIT;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
+        write_vs <= 1'b0;
     end else begin
         state <= next_state;
         case(state)
@@ -145,7 +155,6 @@ always_ff @(posedge clock) begin
         BACKPROP: begin
             reset_bcp <= 1'b1;           // TODO: Where & How does this happen? Clearing conflict variable
             // Send conflict line to Decide Module
-            unassign_in_vs <= 1'b1;
 
             //Update Var State table from values coming from popping Trace Table
             if (empty_trace) begin
@@ -171,7 +180,7 @@ always_ff @(posedge clock) begin
                 next_state <= BCP_INIT;
             end else begin
                 write_vs <= 1'b1;
-                unassign_in_vs <= 1'b0;
+                unassign_in_vs <= 1'b1;
                 var_in_vs <= var_out_trace;
             end
 
