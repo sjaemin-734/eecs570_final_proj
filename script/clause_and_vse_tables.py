@@ -54,12 +54,18 @@ var_dict = {}
 
 # Read file line by line
 for line in read_handler:
+    line_elements = line.split()
+    
     # Ignore comments
-    if line[0] == 'c' or line[0] == 'p':
+    if line_elements[0] == 'c':
+        continue
+    if line_elements[0] == 'p':
+        num_vars = int(line_elements[2])
+        num_clauses = int(line_elements[3])
         continue
     
     # Process clauses
-    for var in line.split():
+    for var in line_elements:
         # Check if this is the last element in line (sentinel)
         if var == '0':
             break
@@ -76,8 +82,14 @@ for line in read_handler:
 var_dict = dict(sorted(var_dict.items()))
 # print(var_dict) # debug
 
+pad_clause_table = "0" * MAX_CLAUSES_BITS + "\n"
+pad_var_start_end_table = "0" * MAX_CLAUSE_TABLE_BITS * 2 + "\n"
+
+# Pad first row of var_start_end_table (since var 0 is unused)
+write_var_start_end_table.write(pad_var_start_end_table)
+
 # Convert each key/val pair in dict to binary output
-var_idx_counter = 1
+var_idx_counter = 1     # Keeps track of idx in clause table
 for var, clause_list in var_dict.items():
     for clause in clause_list:
         # Populate the clause table
@@ -92,6 +104,17 @@ for var, clause_list in var_dict.items():
     var_idx_counter += len(clause_list)
     end_idx_binary = f"{var_idx_counter:0{MAX_CLAUSE_TABLE_BITS}b}\n"
     write_var_start_end_table.write(end_idx_binary)
+
+# Pad the remaining area in memory with 0's
+# -1 to var_idx_counter because it's an exclusive boundary
+padding_clause_table_bottom = MAX_CLAUSE_TABLE - (var_idx_counter - 1)
+for i in range(padding_clause_table_bottom):
+    write_clause_table.write(pad_clause_table)
+    
+# -1 is from padding row 0 earlier
+padding_var_start_end_table_bottom = MAX_VARS - num_vars - 1
+for i in range(padding_var_start_end_table_bottom):
+    write_var_start_end_table.write(pad_var_start_end_table)
 
 # Close files
 read_handler.close()
