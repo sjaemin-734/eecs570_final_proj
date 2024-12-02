@@ -13,16 +13,34 @@ module control_test;
 
     // IMPLY
     logic empty_imply;
+    logic full_imply;
     logic [`MAX_VARS_BITS-1:0] var_out_imply;
     logic val_out_imply;
     logic type_out_imply;
     logic pop_imply;
+    // IMPLY ADDITIONAL (Not for control)
+    logic push_imply;
+    logic [`MAX_VARS_BITS-1:0] var_in_imply;
+    logic val_in_imply;
     // TRACE
+    logic reset_trace;
     logic empty_trace;
+    logic full_trace;
     logic [`MAX_VARS_BITS-1:0] var_out_trace;
     logic val_out_trace;
     logic type_out_trace;
     logic pop_trace;
+    // Connected to test
+    logic [`MAX_VARS_BITS-1:0] var_in_trace_test;
+    logic val_in_trace_test;
+    logic type_in_trace_test;
+    logic push_trace_test;
+    // Connected to control
+    logic [`MAX_VARS_BITS-1:0] var_in_trace_c;
+    logic val_in_trace_c;
+    logic type_in_trace_c;
+    logic push_trace_c;
+
     logic push_trace;
     logic [`MAX_VARS_BITS-1:0] var_in_trace;
     logic val_in_trace;
@@ -63,10 +81,10 @@ module control_test;
         .val_out_trace(val_out_trace),
         .type_out_trace(type_out_trace),
         .pop_trace(pop_trace),
-        .push_trace(push_trace),
-        .var_in_trace(var_in_trace),
-        .val_in_trace(val_in_trace),
-        .type_in_trace(type_in_trace),
+        .push_trace(push_trace_c),
+        .var_in_trace(var_in_trace_c),
+        .val_in_trace(val_in_trace_c),
+        .type_in_trace(type_in_trace_c),
 
         .write_vs(write_vs),
         .var_in_vs(var_in_vs),
@@ -82,11 +100,75 @@ module control_test;
         .unsat(unsat)
     );
 
+    stack imply_stack (
+        .clock(clock),
+        .reset(reset_bcp),
+        .push(push_imply),
+        .pop(pop_imply),
+        .type_in(1'b1),
+        .val_in(val_in_imply),
+        .var_in(var_in_imply),
+        .type_out(type_out_imply),
+        .val_out(val_out_imply),
+        .var_out(var_out_imply),
+        .empty(empty_imply),
+        .full(full_imply)
+    );
+
+    stack trace_stack (
+        .clock(clock),
+        .reset(reset_trace),
+        .push(push_trace),
+        .pop(pop_trace),
+        .type_in(type_in_trace),
+        .val_in(val_in_trace),
+        .var_in(var_in_trace),
+        .type_out(type_out_trace),
+        .val_out(val_out_trace),
+        .var_out(var_out_trace),
+        .empty(empty_trace),
+        .full(full_trace)
+    );
+
     // Clock generation
     initial begin
         clock = 0;
         forever #5 clock = ~clock; // 10 ns clock period
     end
+
+    task PUSH_TO_IMPLY;
+        input [`MAX_VARS_BITS-1:0] var_in;
+        input val_in;
+        begin
+            push_imply = 1'b1;
+            var_in_imply = var_in;
+            val_in_imply = val_in;
+            @(negedge clock);
+            push_imply = 1'b0;
+            var_in_imply = 0;
+            val_in_imply = 0;
+            @(negedge clock);
+        end
+    endtask
+
+    task PUSH_TO_TRACE;
+        input [`MAX_VARS_BITS-1:0] var_in;
+        input val_in;
+        input type_in;
+        begin
+            push_trace_test = 1'b1;
+            var_in_trace_test = var_in;
+            val_in_trace_test = val_in;
+            type_in_trace_test = type_in;
+            @(negedge clock);
+            push_trace_test = 1'b0;
+            var_in_trace_test = 0;
+            val_in_trace_test = 0;
+            type_in_trace_test = 0;
+            @(negedge clock);
+
+        end
+    endtask
 
     always @(posedge clock) begin
         $display("INITIALIZE: reset = %0b start = %0b \
@@ -103,6 +185,19 @@ module control_test;
                 write_vs, var_in_vs, val_in_vs, unassign_in_vs,
                 start_clause, end_clause, read_var_start_end, var_in_vse,
                 sat, unsat);
+    end
+
+
+    always_comb begin
+        if (reset) begin
+            reset_trace = reset;
+        end else begin
+            reset_trace = 0;
+        end
+        push_trace = push_trace_c | push_trace_test;
+        val_in_trace = push_trace_test ? val_in_trace_test : val_in_trace_c;
+        var_in_trace = push_trace_test ? var_in_trace_test : var_in_trace_c;
+        type_in_trace = push_trace_test ? type_in_trace_test : type_in_trace_c;
     end
 
     // Test sequence
@@ -141,6 +236,7 @@ module control_test;
         bcp_busy = 0;
 
         @(negedge clock);
+
         @(negedge clock);
         $display("\nAttempt to pop imply");
 
@@ -150,7 +246,6 @@ module control_test;
 
 
         reset = 0;
-        empty_trace = 1;
         conflict = 1;
         bcp_busy = 1;
 
@@ -164,24 +259,24 @@ module control_test;
         $display("\nShould see UNSAT above here and attemp to pop trace");
 
         reset = 1;
-        empty_trace = 0;
         @(negedge clock);
         reset = 0;
         bcp_busy = 1;
+        conflict = 0;
+        for (integer i = 0; i < 3; i = i + 1) begin
+            PUSH_TO_TRACE($random, $random, 1);
+        end
+        PUSH_TO_TRACE($random, $random, 0);
+        @(negedge clock);
         conflict = 1;
-
-        type_out_trace = 1;
+        bcp_busy = 0;
 
         @(negedge clock);
-
-        for(integer i = 0; i < 5; i = i + 1) begin
-            var_out_trace = $random;
+        for (integer i = 0; i < 5; i = i + 1) begin
             @(negedge clock);
         end
+
         $display("\nShould unassign variables above");
-        type_out_trace = 0;
-        val_out_trace = 1;
-        var_out_trace = 23;
 
         @(negedge clock);
         $display("\nShould assign variable opposite val and be forced");
@@ -198,7 +293,6 @@ module control_test;
 
         bcp_busy = 0;
         conflict = 1;
-        empty_trace = 1;
 
         for (integer i = 0; i < 4; i = i + 1) begin
             @(negedge clock);
