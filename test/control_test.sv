@@ -106,12 +106,19 @@ module control_test;
 
         reset = 0;
         start = 1;
+        empty_trace = 1;
+        bcp_busy = 1;
 
         @(negedge clock);
 
+        bcp_busy = 0;
         start = 0;
 
         @(negedge clock);
+        @(negedge clock);
+        @(negedge clock);
+        @(negedge clock);
+
 
         // Wait until something happens???
         // TODO: Copy EECS 470 wait till something happens function to put here

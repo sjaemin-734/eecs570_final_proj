@@ -82,7 +82,7 @@ end
 
 always_ff @(posedge clock) begin
     if (reset) begin 
-        state <= IDLE;
+        state <= BCP_WAIT;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
