@@ -166,9 +166,13 @@ always_ff @(posedge clock) begin
 
                 var_in_bcp <= var_out_trace;
 
+                pop_trace <= 1'b0;
+
                 next_state <= BCP_INIT;
             end else begin
+                write_vs <= 1'b1;
                 unassign_in_vs <= 1'b0;
+                var_in_vs <= var_out_trace;
             end
 
         end

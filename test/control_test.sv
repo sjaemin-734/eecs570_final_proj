@@ -113,10 +113,25 @@ module control_test;
 
         @(negedge clock);
 
-        $display("\nStart Solver Expected");
+        $display("\nStart Solver at BCP WAIT");
 
         reset = 0;
-        start = 1;
+        conflict = 0;
+        bcp_busy = 1;
+
+        @(negedge clock);
+
+        bcp_busy = 0;
+
+        @(negedge clock);
+        $display("\nAttempt to pop imply");
+
+        @(negedge clock);
+        reset = 1;
+        @(negedge clock);
+
+
+        reset = 0;
         empty_trace = 1;
         conflict = 1;
         bcp_busy = 1;
@@ -124,12 +139,53 @@ module control_test;
         @(negedge clock);
 
         bcp_busy = 0;
-        start = 0;
+
+        for (integer i = 0; i < 4; i = i + 1) begin
+            @(negedge clock);
+        end
+        $display("\nShould see UNSAT above here and attemp to pop trace");
+
+        reset = 1;
+        @(negedge clock);
+        reset = 0;
+        bcp_busy = 1;
+        conflict = 1;
+
+        empty_trace = 0;
+        type_out_trace = 1;
+
+        for(integer i = 0; i < 5; i = i + 1) begin
+            var_out_trace = $random;
+            @(negedge clock);
+        end
+        $display("\nShould unassign variables above");
+        type_out_trace = 0;
+        val_out_trace = 1;
+        var_out_trace = 23;
 
         @(negedge clock);
+        $display("\nShould assign variable opposite val and be forced");
         @(negedge clock);
+        $display("\nShould send var to var start end");
         @(negedge clock);
-        @(negedge clock);
+        start_clause = 0;
+        end_clause = 10;
+        bcp_busy = 1;
+
+        for (integer i = 0; i < 13; i = i + 1) begin
+            @(negedge clock);
+        end
+
+        bcp_busy = 0;
+        conflict = 1;
+        empty_trace = 1;
+
+        for (integer i = 0; i < 4; i = i + 1) begin
+            @(negedge clock);
+        end
+        $display("\nShould see unsat again");
+
+        
 
 
         // Wait until something happens???
