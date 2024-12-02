@@ -8,7 +8,7 @@ import sys
 # Check that there are the required number of input args
 if len(sys.argv) != 2:
     print("Error: Invalid number of arguments passed into script", file=sys.stderr)
-    exit(1)
+    sys.exit()
 
 # Create directory for processed files if it doesn't exist yet
 os.makedirs("preprocessed", exist_ok=True)

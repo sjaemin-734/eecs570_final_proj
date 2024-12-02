@@ -11,7 +11,7 @@ DEBUG = False
 
 if len(sys.argv) < 1:
     print("Error: no file specified!")
-    exit(1)
+    sys.exit()
 
 # Create directory for processed files if it doesn't exist yet
 os.makedirs("preprocessed", exist_ok=True)

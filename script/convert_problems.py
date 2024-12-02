@@ -3,6 +3,32 @@
 # Usage (from parent directory): python3 script/convert_problems.py
 
 import os
+import sys
+
+# Max vars and clauses of an input SAT problem
+MAX_VARS = 511
+MAX_CLAUSES = 1023
+
+# Store the var and clause counts found in .cnf file
+num_vars, num_clauses = None
+
+# Check if num vars and clauses exceed max
+# Returns True if max is exceeded
+def check_max_limits(formatted_sat_prob, formatted_name):
+    limit_exceeded = False
+    
+    if num_vars > MAX_VARS:
+        print("Error: Test exceeds max number of variables")
+        limit_exceeded = True
+        
+    if num_clauses > MAX_CLAUSES:
+        print("Error: Test exceeds max number of clauses")
+        limit_exceeded = True
+    
+    if limit_exceeded = True:
+        formatted_sat_prob.close()
+        os.remove(formatted_name)
+        sys.exit()
 
 # Create directory for processed files if it doesn't exist yet
 os.makedirs("preprocessed", exist_ok=True)
@@ -13,6 +39,53 @@ print("Running scripts to convert .cnf to binary inputs...")
 directory = os.fsencode("sat_problems")
 for file in os.listdir(directory):
     name = f"sat_problems/{file.decode('utf-8')}"
+    
+    # Check if all clauses are <= 5 vars
+    # Otherwise, recursively break down the clause to have
+    # <= 5 vars
+    
+    sat_prob = open(name, 'r')
+    formatted_name = f"formatted_sat_problems/{file.decode('utf-8')}"
+    formatted_sat_prob = open(formatted_name, 'w+')
+    
+    # List that holds all lines of new .cnf
+    formatted_cnf_lines = []
+    
+    for line in sat_prob:
+        # Copy the non-clause lines to the new file
+        line_elements = line.split()
+        if line_elements[0] == 'c':
+            formatted_sat_prob.write(line)
+            
+        elif line_elements[0] == 'p':
+            num_vars = int(line_elements[2])
+            num_clauses = int(line_elements[3])
+            check_max_limits(formatted_sat_prob, formatted_name)
+            
+            # Set a temp line for p to overwrite later with
+            # actual p line (must save line num)
+            formatted_sat_prob.write("p TEMP\n")
+            
+            
+        else:
+            # Don't include sentinel 0 while counting # of vars in clause
+            line_var_count = len(line_elements-1)
+
+            if line_var_count <= 5:
+                # No issue with line, copy to new .cnf
+                # formatted_sat_prob.write(line)
+                
+            # Break down the clause to be smaller
+            else:
+                # Remove the sentinel 0 from the line
+                line_elements = line_elements[:-1]
+                while len(line_elements) > 5:
+
+                    
+                    # TODO: add the sentinel 0 back in before pushing it
+                
+
+    # TODO: use the reformatted version of the .cnf
     os.system(f"python3 script/clause_database.py {name}")
     os.system(f"python3 script/clause_and_vse_tables.py {name}")
     os.system(f"python3 script/decider.py {name}")
