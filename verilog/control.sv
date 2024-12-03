@@ -10,6 +10,7 @@ module control (
     input conflict,
     output logic [`MAX_CLAUSES_BITS-1:0] bcp_clause_idx,
     output logic reset_bcp,
+    output logic bcp_en,
 
     // IMPLY
     input empty_imply,
@@ -113,6 +114,7 @@ always_ff @(posedge clock) begin
         pop_trace <= 1'b0;
         write_vs <= 1'b0;
         dec_idx_d_in <= 1'b0;
+        bcp_en <= 1'b0;
 
     end else begin
         state <= next_state;
@@ -191,7 +193,8 @@ always_ff @(posedge clock) begin
         end
         BCP_CORE: begin
             read_var_start_end <= 1'b0;
-            bcp_clause_idx <= start_clause + i;
+            bcp_clause_idx <= start_clause + i;     // Input of Clause Database (index)
+            bcp_en <= 1'b1;     // Connected to Clause Database (read)
             if (start_clause + i == end_clause - 1) begin
                 next_state <= BCP_WAIT;
             end
@@ -231,6 +234,7 @@ always_ff @(posedge clock) begin
 
         end
         BCP_WAIT: begin
+            bcp_en <= 1'b0;
             if (conflict) begin
                 next_state <= BACKPROP;
                 pop_trace <= 1'b1;

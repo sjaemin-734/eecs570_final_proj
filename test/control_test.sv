@@ -10,6 +10,7 @@ module control_test;
     logic conflict;
     logic [`MAX_CLAUSES_BITS-1:0] bcp_clause_idx;
     logic reset_bcp;
+    logic bcp_en;
 
     // IMPLY
     logic empty_imply;
@@ -85,6 +86,7 @@ module control_test;
         .conflict(conflict),
         .bcp_clause_idx(bcp_clause_idx),
         .reset_bcp(reset_bcp),
+        .bcp_en(bcp_en),
 
         .empty_imply(empty_imply),
         .var_out_imply(var_out_imply),
@@ -210,14 +212,14 @@ module control_test;
 
     always @(posedge clock) begin
         $display("INITIALIZE: reset = %0b start = %0b state = %0d \
-                \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d \
+                \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d bcp_en = %0b \
                 \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
                 \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
                 \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
                 \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
                 \nRESULTS: sat = %0b unsat %0b\n",
                 reset, start, state_out,
-                bcp_busy, conflict, bcp_clause_idx, reset_bcp,
+                bcp_busy, conflict, bcp_clause_idx, reset_bcp, bcp_en,
                 empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
                 empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
                 write_vs, var_in_vs, val_in_vs, unassign_in_vs,
