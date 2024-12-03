@@ -20,9 +20,9 @@ import os
 import sys
 
 # Check that there are the required number of input args
-if len(sys.argv) != 2:
-    print("Error: Invalid number of arguments passed into script", file=sys.stderr)
-    exit(1)
+# if len(sys.argv) != 2:
+#     print("Error: Invalid number of arguments passed into script", file=sys.stderr)
+#     exit(1)
 
 # Create directory for processed files if it doesn't exist yet
 os.makedirs("preprocessed", exist_ok=True)
@@ -89,7 +89,7 @@ pad_var_start_end_table = "0" * MAX_CLAUSE_TABLE_BITS * 2 + "\n"
 write_var_start_end_table.write(pad_var_start_end_table)
 
 # Convert each key/val pair in dict to binary output
-var_idx_counter = 1     # Keeps track of idx in clause table
+var_idx_counter = 0    # Keeps track of idx in clause table
 for var, clause_list in var_dict.items():
     for clause in clause_list:
         # Populate the clause table
