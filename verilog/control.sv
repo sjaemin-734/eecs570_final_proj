@@ -28,7 +28,10 @@ module control (
     output logic val_in_trace,
     output logic type_in_trace,
     // VAR STATE
+    input val_out_vs,
+    input unassign_out_vs,
     output logic write_vs,
+    output logic read_vs,
     output logic [`MAX_VARS_BITS-1:0] var_in_vs,
     output logic val_in_vs,
     output logic unassign_in_vs,
@@ -37,20 +40,22 @@ module control (
     input [`MAX_CLAUSES_BITS-1:0] end_clause,
     output logic read_var_start_end,
     output logic [`MAX_VARS_BITS-1:0] var_in_vse,
-    // DECIDER
-    input logic [`MAX_VARS_BITS-1:0] dec_idx_d,
-    input logic [`MAX_VARS_BITS-1:0] var_idx_d,
-    input logic val_d,
-    output config_var dec_config, // A pair of variable inde and its decision value
-    output writemem_d, // High when getting config data
-    output read_d, // Control is asking for next value
-    output write_d, // Control is replacing dec_idx
-    output [`MAX_VARS_BITS-1:0] back_dec_idx_d, // Used by the Control when backtracking
+    // DECIDER MEMORY MODULE
+    input  [`MAX_VARS_BITS-1:0] var_idx_d,
+    input val_d,
+    output logic read_d, // Control is asking for next value
+    output logic [`MAX_VARS_BITS-1:0] dec_idx_d_in, // Used by the Control to access memory module
     // DECIDER STACK
-
+    input [`MAX_VARS_BITS-1:0] dec_idx_ds_out,
+    input empty_ds,
+    output logic push_ds,
+    output logic pop_ds,
+    output logic [`MAX_VARS_BITS-1:0] dec_idx_ds_in,
     // SAT Results
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
-    output logic unsat
+    output logic unsat,
+    // State debug
+    output logic [3:0] state_out
 );
 
 // state variables
@@ -73,12 +78,22 @@ logic [`MAX_VARS_BITS-1:0] var_in_bcp;
 // Index through start to end
 logic [`MAX_CLAUSES_BITS-1:0] i;
 
+// Tells Decider which index to use
+logic from_decider;
+
 always_comb begin
+    state_out = state;
     if (reset) begin
         sat = 1'b0;
         unsat = 1'b0;
     end
     case(state)
+        DECIDE: begin
+            from_decider = 1;
+        end
+        BACKPROP: begin
+            from_decider = 0;
+        end
         SAT: begin
             sat = 1'b1;
         end
@@ -97,6 +112,8 @@ always_ff @(posedge clock) begin
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
         write_vs <= 1'b0;
+        dec_idx_d_in <= 1'b0;
+
     end else begin
         state <= next_state;
         case(state)
@@ -109,6 +126,7 @@ always_ff @(posedge clock) begin
         FIND_NEXT: begin
             pop_imply <= 1'b0;
             if (empty_imply) begin
+                read_d <= 1'b1;
                 next_state <= DECIDE;
             end else begin
                 push_trace <= 1'b1;
@@ -128,16 +146,44 @@ always_ff @(posedge clock) begin
             end
         end
         DECIDE: begin
-            push_trace <= 1'b1;
+            read_vs <= 1'b1;
+            var_in_vs <= var_idx_d;
+
+            if(unassign_out_vs) begin
+                push_trace <= 1'b1;
+                write_vs <= 1'b1;
+                read_d <= 1'b0;
+                push_ds <= 1'b1;
+
+                unassign_in_vs <= 1'b0;
+                val_in_vs <= val_d;
+                var_in_vs <= var_idx_d;
+
+                val_in_trace <= val_d;
+                var_in_trace <= var_idx_d;
+                type_in_trace = 1'b0;
+
+                dec_idx_ds_in = dec_idx_d_in;
+
+                var_in_bcp = var_idx_d;
+
+                next_state = BCP_INIT;
+            end else begin
+                dec_idx_d_in <= dec_idx_d_in+1;
+            end
             // TODO:decide module gives var_out_imply, val_out_imply, type_out_imply (D)
             // TODO:Update Var State Table with unassign = 0 & val = val_out_imply
-            next_state <= BCP_INIT;
         end
         BCP_INIT: begin
             reset_bcp <= 1'b1;
             push_trace <= 1'b0;
             write_vs <= 1'b0;
+            read_vs <= 1'b0;
+            push_ds <= 1'b0;
+            pop_ds <= 1'b0;
             // Receive start and end clause IDs for var_out_imply
+
+            dec_idx_d_in <= from_decider ? dec_idx_d_in+1 : dec_idx_ds_out;
             read_var_start_end <= 1'b1;
             var_in_vse <= var_in_bcp;
             i <= 0;
@@ -164,6 +210,7 @@ always_ff @(posedge clock) begin
                 pop_trace <= 1'b0;
                 push_trace <= 1'b1;
                 write_vs <= 1'b1;
+                pop_ds <= 1'b1;
 
                 unassign_in_vs <= 1'b0;
                 val_in_vs <= ~val_out_trace;
@@ -174,8 +221,6 @@ always_ff @(posedge clock) begin
                 type_in_trace <= 1'b1;
 
                 var_in_bcp <= var_out_trace;
-
-                pop_trace <= 1'b0;
 
                 next_state <= BCP_INIT;
             end else begin

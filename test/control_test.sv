@@ -56,9 +56,25 @@ module control_test;
     logic read_var_start_end;
     logic [`MAX_VARS_BITS-1:0] var_in_vse;
 
+    // DECIDER MEMORY MODULE
+    logic [`MAX_VARS_BITS-1:0] var_idx_d;
+    logic val_d;
+    logic read_d; // Control is asking for next value
+    logic [`MAX_VARS_BITS-1:0] dec_idx_d_in; // Used by the Control to access memory module
+    
+    // DECIDER STACK
+    logic [`MAX_VARS_BITS-1:0] dec_idx_ds_out;
+    logic empty_ds;
+    logic push_ds;
+    logic pop_ds;
+    logic [`MAX_VARS_BITS-1:0] dec_idx_ds_in;
+
     // SAT Results
     logic sat;                     // Have separate UNSAT/SAT variable just in case
     logic unsat;
+
+    //State debug
+    logic [3:0] state_out;
 
     control DUT (
         .clock(clock),
@@ -96,8 +112,20 @@ module control_test;
         .read_var_start_end(read_var_start_end),
         .var_in_vse(var_in_vse),
 
+        .var_idx_d(var_idx_d),
+        .val_d(val_d),
+        .read_d(read_d),
+        .dec_idx_d_in(dec_idx_d_in),
+
+        .dec_idx_ds_out(dec_idx_ds_out),
+        .empty_ds(empty_ds),
+        .push_ds(push_ds),
+        .pop_ds(pop_ds),
+        .dec_idx_ds_in(dec_idx_ds_in),
+
         .sat(sat),
-        .unsat(unsat)
+        .unsat(unsat),
+        .state_out(state_out)
     );
 
     stack imply_stack (
@@ -128,6 +156,16 @@ module control_test;
         .var_out(var_out_trace),
         .empty(empty_trace),
         .full(full_trace)
+    );
+
+    decider_stack ds(
+    .clock(clock),
+    .reset(reset),
+    .push(push_ds),
+    .pop(pop_ds),
+    .dec_idx_in(dec_idx_ds_in), // Index for the Decider
+    .dec_idx_out(dec_idx_ds_out),           
+    .empty(empty_ds)
     );
 
     // Clock generation
@@ -171,14 +209,14 @@ module control_test;
     endtask
 
     always @(posedge clock) begin
-        $display("INITIALIZE: reset = %0b start = %0b \
+        $display("INITIALIZE: reset = %0b start = %0b state = %0d \
                 \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d reset_bcp = %0d \
                 \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
                 \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
                 \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
                 \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
                 \nRESULTS: sat = %0b unsat %0b\n",
-                reset, start, 
+                reset, start, state_out,
                 bcp_busy, conflict, bcp_clause_idx, reset_bcp,
                 empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
                 empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
@@ -259,9 +297,9 @@ module control_test;
         $display("\nShould see UNSAT above here and attemp to pop trace");
 
         reset = 1;
+        bcp_busy = 1;
         @(negedge clock);
         reset = 0;
-        bcp_busy = 1;
         conflict = 0;
         for (integer i = 0; i < 3; i = i + 1) begin
             PUSH_TO_TRACE($random, $random, 1);
