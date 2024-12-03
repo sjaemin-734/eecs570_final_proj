@@ -37,8 +37,8 @@ module control (
     output logic val_in_vs,
     output logic unassign_in_vs,
     // VAR START END TABLE
-    input [`MAX_CLAUSES_BITS-1:0] start_clause,
-    input [`MAX_CLAUSES_BITS-1:0] end_clause,
+    input [`CLAUSE_TABLE_BITS-1:0] start_clause,
+    input [`CLAUSE_TABLE_BITS-1:0] end_clause,
     output logic read_var_start_end,
     output logic [`MAX_VARS_BITS-1:0] var_in_vse,
     // DECIDER MEMORY MODULE
@@ -69,7 +69,8 @@ enum logic [3:0]{
     BACKPROP,
     BCP_WAIT,       // CHECK:Is it needed to for another transient state?
     SAT,
-    UNSAT
+    UNSAT,
+    TEST
 } state;
 logic [3:0] next_state;
 
@@ -77,7 +78,7 @@ logic [3:0] next_state;
 logic [`MAX_VARS_BITS-1:0] var_in_bcp;
 
 // Index through start to end
-logic [`MAX_CLAUSES_BITS-1:0] i;
+logic [`CLAUSE_TABLE_BITS-1:0] i;
 
 // Tells Decider which index to use
 logic from_decider;
@@ -85,30 +86,32 @@ logic from_decider;
 always_comb begin
     state_out = state;
     if (reset) begin
+        state = BCP_WAIT;
         sat = 1'b0;
         unsat = 1'b0;
+    end else begin
+        state = next_state;
+        case(state)
+            DECIDE: begin
+                from_decider = 1;
+            end
+            BACKPROP: begin
+                from_decider = 0;
+            end
+            SAT: begin
+                sat = 1'b1;
+            end
+            UNSAT:begin
+                unsat = 1'b1;
+            end
+        endcase
     end
-    case(state)
-        DECIDE: begin
-            from_decider = 1;
-        end
-        BACKPROP: begin
-            from_decider = 0;
-        end
-        SAT: begin
-            sat = 1'b1;
-        end
-        UNSAT:begin
-            unsat = 1'b1;
-        end
-    endcase
 end
 
 
 always_ff @(posedge clock) begin
-    if (reset) begin 
-        state <= BCP_WAIT;
-        next_state = BCP_WAIT;
+    if (reset) begin
+        next_state <= BCP_WAIT;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
@@ -117,7 +120,6 @@ always_ff @(posedge clock) begin
         bcp_en <= 1'b0;
 
     end else begin
-        state <= next_state;
         case(state)
         IDLE: begin
             if (start) begin
@@ -150,8 +152,9 @@ always_ff @(posedge clock) begin
         DECIDE: begin
             read_vs <= 1'b1;
             var_in_vs <= var_idx_d;
-
-            if(unassign_out_vs) begin
+            if (dec_idx_d_in > `MAX_VARS-1) begin
+                next_state = SAT;
+            end else if(unassign_out_vs) begin
                 push_trace <= 1'b1;
                 write_vs <= 1'b1;
                 read_d <= 1'b0;
@@ -163,13 +166,13 @@ always_ff @(posedge clock) begin
 
                 val_in_trace <= val_d;
                 var_in_trace <= var_idx_d;
-                type_in_trace = 1'b0;
+                type_in_trace <= 1'b0;
 
-                dec_idx_ds_in = dec_idx_d_in;
+                dec_idx_ds_in <= dec_idx_d_in;
 
-                var_in_bcp = var_idx_d;
+                var_in_bcp <= var_idx_d;
 
-                next_state = BCP_INIT;
+                next_state <= TEST;
             end else begin
                 dec_idx_d_in <= dec_idx_d_in+1;
             end
@@ -177,7 +180,7 @@ always_ff @(posedge clock) begin
             // TODO:Update Var State Table with unassign = 0 & val = val_out_imply
         end
         BCP_INIT: begin
-            reset_bcp <= 1'b1;
+            reset_bcp <= 1'b0;
             push_trace <= 1'b0;
             write_vs <= 1'b0;
             read_vs <= 1'b0;
@@ -225,13 +228,16 @@ always_ff @(posedge clock) begin
 
                 var_in_bcp <= var_out_trace;
 
-                next_state <= BCP_INIT;
+                next_state <= TEST;
             end else begin
                 write_vs <= 1'b1;
                 unassign_in_vs <= 1'b1;
                 var_in_vs <= var_out_trace;
             end
 
+        end
+        TEST: begin
+            next_state <= BCP_INIT;
         end
         BCP_WAIT: begin
             bcp_en <= 1'b0;

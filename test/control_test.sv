@@ -52,8 +52,8 @@ module control_test;
     logic val_in_vs;
     logic unassign_in_vs;
     // VAR START END TABLE
-    logic [`MAX_CLAUSES_BITS-1:0] start_clause;
-    logic [`MAX_CLAUSES_BITS-1:0] end_clause;
+    logic [`CLAUSE_TABLE_BITS-1:0] start_clause;
+    logic [`CLAUSE_TABLE_BITS-1:0] end_clause;
     logic read_var_start_end;
     logic [`MAX_VARS_BITS-1:0] var_in_vse;
 
@@ -262,6 +262,8 @@ module control_test;
         // Reset test
         clock = 0;
         reset = 1;
+        start_clause = 0;
+        end_clause = 0;
 
         @(negedge clock);
 
@@ -312,7 +314,7 @@ module control_test;
         bcp_busy = 0;
 
         @(negedge clock);
-        for (integer i = 0; i < 5; i = i + 1) begin
+        for (integer i = 0; i < 3; i = i + 1) begin
             @(negedge clock);
         end
 
@@ -321,10 +323,10 @@ module control_test;
         @(negedge clock);
         $display("\nShould assign variable opposite val and be forced");
         @(negedge clock);
-        $display("\nShould send var to var start end");
-        @(negedge clock);
         start_clause = 0;
         end_clause = 10;
+        $display("\nShould send var to var start end");
+        @(negedge clock);
         bcp_busy = 1;
 
         for (integer i = 0; i < 13; i = i + 1) begin
