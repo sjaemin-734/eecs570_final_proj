@@ -6,6 +6,10 @@ N_SAT = 5
 BITS = 9
 MAX_CLAUSES = 1024
 
+# IN_ORDER = true: mask and poles are in ascending order (1,2,3,4,5)
+# IN_ORDER = false: mask and poles are in descending order (1,2,3,4,5)
+IN_ORDER = True
+
 # Debug mode prints the vars in decimal and the masks in binary (in string form)
 DEBUG = False
 
@@ -56,7 +60,7 @@ while True:
     else:
         vars = line.split()
         clause_db.append([2**N_SAT - 1]) # mask is initially all ones
-        clause_db[clause_num-1].append(2**N_SAT - 1) # start with all negated and XOR away variables that are
+        clause_db[clause_num-1].append(2**N_SAT - 1) # start with all negated and XOR away variables that are not
 
         i = 0
         temp = []
@@ -66,7 +70,8 @@ while True:
 
                 # Clearing pole bit if var is not negated
                 if var > 0:
-                    clause_db[clause_num-1][1] ^= (1 << i)
+                    shift = N_SAT - 1 - i if IN_ORDER else i
+                    clause_db[clause_num-1][1] ^= (1 << shift)
                 
                 # Clauses need to be stored as absolute numbers
                 var = abs(var)
@@ -75,8 +80,12 @@ while True:
                 i += 1
 
         # Clearing mask bits for clauses that are not BITS-SAT
-        for j in range(N_SAT-1, N_SAT-i, -1):
-            clause_db[clause_num-1][0] ^= (1 << j)
+        if IN_ORDER:
+            for j in range(N_SAT-i):
+                clause_db[clause_num-1][0] ^= (1 << j)
+        else:
+            for j in range(N_SAT-1, N_SAT-i, -1):
+                clause_db[clause_num-1][0] ^= (1 << j)
 
         # Adding additional bits to ensure that final width is correct
         # and consistent with N-SAT
