@@ -49,11 +49,11 @@ for file in os.listdir(directory):
         mif_handle.write("CONTENT\n")
         mif_handle.write("BEGIN\n")
         
-        line_counter = 0;
+        line_counter = 0
         for file_line in file_lines:
             line_content = file_line.strip()
             mif_handle.write(f"{line_counter}\t\t:\t{line_content};\n")
-            line_counter += 1;
+            line_counter += 1
         mif_handle.write("END;")
         
         # Close .txt and .mif files
