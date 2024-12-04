@@ -4,6 +4,9 @@
 
 import os
 
+# Create directory for reduced files if it doesn't exist yet
+os.makedirs("reduced", exist_ok=True)
+
 # Create directory for processed files if it doesn't exist yet
 os.makedirs("preprocessed", exist_ok=True)
 
@@ -13,10 +16,13 @@ print("Running scripts to convert .cnf to binary inputs...")
 directory = os.fsencode("sat_problems")
 for file in os.listdir(directory):
     name = f"sat_problems/{file.decode('utf-8')}"
+    os.system(f"python3 script/reduce_cnf.py {name}")
+    name = f"reduced/{file.decode('utf-8')}"
     os.system(f"python3 script/clause_database.py {name}")
     os.system(f"python3 script/clause_and_vse_tables.py {name}")
     os.system(f"python3 script/decider.py {name}")
-
+    # Removing reduced file
+    
 # Convert raw binary outputs from the scripts into .mif
 # .mif = Memory Initialization File
 
