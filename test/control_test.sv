@@ -234,6 +234,7 @@ module control_test;
         end else begin
             reset_trace = 0;
         end
+        var_idx_d = dec_idx_d_in;
         push_trace = push_trace_c | push_trace_test;
         val_in_trace = push_trace_test ? val_in_trace_test : val_in_trace_c;
         var_in_trace = push_trace_test ? var_in_trace_test : var_in_trace_c;

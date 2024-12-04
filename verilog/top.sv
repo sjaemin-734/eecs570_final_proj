@@ -1,10 +1,9 @@
 `include "sysdefs.svh"
-`include "verilog/control.sv"
-`include "verilog/stack.sv"
-`include "verilog/decider.sv"
-`include "verilog/sub_clause_eval.sv"
-`include "verilog/decider_stack.sv"
-`include "verilog/var_state.sv"
+// `include "verilog/control.sv"
+// `include "verilog/stack.sv"
+// `include "verilog/sub_clause_eval.sv"
+// `include "verilog/decider_stack.sv"
+// `include "verilog/var_state.sv"
 
 // top level module
 
@@ -31,14 +30,15 @@ module top(
     logic [3:0] state_out;
 
     // Var Start End Table variables
-    output [`CLAUSE_TABLE_BITS*2-1:0] data_out_vse;
+    logic [`CLAUSE_TABLE_BITS*2-1:0] data_out_vse;
+    logic read_var_start_end;
 
     // Clause Table variables
-    output [`MAX_CLAUSES_BITS-1:0] data_out_ct;
+    logic [`MAX_CLAUSES_BITS-1:0] data_out_ct;
 
     // Clause Database variables
     // output
-    output [`CLAUSE_DATA_BITS-1:0] clause_info;
+    logic [`CLAUSE_DATA_BITS-1:0] clause_info;
 
     // Var State variables
     // inputs
@@ -62,14 +62,14 @@ module top(
     // inputs
     // logic config_var dec_config_d; // A pair of variable inde and its decision value
     // logic writemem_d; // High when getting config data
-    // logic read_d; // Control is asking for next value
+    logic read_d; // Control is asking for next value
     // logic write_d; // Control is replacing dec_idx
     // logic [`MAX_VARS_BITS-1:0] back_dec_idx_d; // Used by the Control when backtracking
     // logic reset_d;
     // // outputs
-    // logic [`MAX_VARS_BITS-1:0] dec_idx_out_d;
-    // logic [`MAX_VARS_BITS-1:0] var_idx_out_d;
-    // logic val_out_d;
+    logic [`MAX_VARS_BITS-1:0] dec_idx_d;
+    logic [`MAX_VARS_BITS-1:0] var_idx_d;
+    logic val_out_d;
 
     // Decider stack variables
     // inputs
@@ -341,16 +341,21 @@ module top(
 
 
     always_comb begin
+        reset_vs = reset;
+        reset_trace = reset;
         if (reset) begin
             unsat = 1'b0;
             sat = 1'b0;
+            reset_imply = 1'b1;
+            reset_cd = 1'b1;
         end else begin
             unsat = unsat_c;
             sat = sat_c;
             start_clause = data_out_vse[`CLAUSE_TABLE_BITS-1:0];
             end_clause = data_out_vse[`CLAUSE_TABLE_BITS*2-1:`CLAUSE_TABLE_BITS];
-            reset_imply = conflict_cd;
-            bcp_busy =  en_ce | en_cd | push_imply   // | en_
+            reset_imply = reset_bcp;
+            reset_cd = reset_bcp;
+            bcp_busy =  en_ce | en_cd | push_imply;   // | en_
         end
     end
 
