@@ -86,7 +86,7 @@ logic from_decider;
 always_comb begin
     state_out = state;
     if (reset) begin
-        state = IDLE;
+        state = BCP_WAIT;
         sat = 1'b0;
         unsat = 1'b0;
     end else begin
@@ -111,13 +111,14 @@ end
 
 always_ff @(posedge clock) begin
     if (reset) begin
-        next_state <= IDLE;
+        next_state <= BCP_WAIT;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
         write_vs <= 1'b0;
         dec_idx_d_in <= 1'b0;
         bcp_en <= 1'b0;
+        read_var_start_end <= 1'b0;
 
     end else begin
         case(state)
@@ -172,7 +173,7 @@ always_ff @(posedge clock) begin
 
                 var_in_bcp <= var_idx_d;
 
-                next_state <= TEST;
+                next_state <= BCP_INIT;
             end else begin
                 dec_idx_d_in <= dec_idx_d_in+1;
             end
@@ -228,7 +229,7 @@ always_ff @(posedge clock) begin
 
                 var_in_bcp <= var_out_trace;
 
-                next_state <= TEST;
+                next_state <= BCP_INIT;
             end else begin
                 write_vs <= 1'b1;
                 unassign_in_vs <= 1'b1;
