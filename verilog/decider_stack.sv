@@ -40,7 +40,7 @@ module decider_stack (
             end else if (pop && !empty) begin
                 stack_ptr <= stack_ptr - 1;
                 // full      <= 0;
-                if (stack_ptr == 0) begin
+                if (stack_ptr == 1) begin
                     empty <= 1;
                 end
             end
@@ -49,7 +49,7 @@ module decider_stack (
 
     always_comb begin
       if (!empty & pop) begin
-            dec_idx_out = stack[stack_ptr][`MAX_VARS_BITS-1:0];
+            dec_idx_out = stack[stack_ptr-1][`MAX_VARS_BITS-1:0];
       end else begin
             dec_idx_out = {`MAX_VARS_BITS{1'b0}};
       end

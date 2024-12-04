@@ -40,7 +40,7 @@ module stack (
                 stack_ptr <= stack_ptr - 1;
                 full      <= 0;
 
-                if (stack_ptr == 0) begin
+                if (stack_ptr == 1) begin
                     empty <= 1;
                 end
             end
@@ -49,9 +49,9 @@ module stack (
 
     always_comb begin
       if (!empty & pop) begin
-            type_out = stack[stack_ptr][`MAX_VARS_BITS+1];
-            val_out = stack[stack_ptr][`MAX_VARS_BITS];
-            var_out = stack[stack_ptr][`MAX_VARS_BITS-1:0];
+            type_out = stack[stack_ptr-1][`MAX_VARS_BITS+1];
+            val_out = stack[stack_ptr-1][`MAX_VARS_BITS];
+            var_out = stack[stack_ptr-1][`MAX_VARS_BITS-1:0];
       end else begin
             type_out = 1'b0;
             val_out = 1'b0;
