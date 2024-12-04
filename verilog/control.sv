@@ -86,7 +86,7 @@ logic from_decider;
 always_comb begin
     state_out = state;
     if (reset) begin
-        state = BCP_WAIT;
+        state = IDLE;
         sat = 1'b0;
         unsat = 1'b0;
     end else begin
@@ -111,7 +111,7 @@ end
 
 always_ff @(posedge clock) begin
     if (reset) begin
-        next_state <= BCP_WAIT;
+        next_state <= IDLE;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
