@@ -5,6 +5,7 @@ module control_test;
     logic clock;
     logic reset;
     logic start;
+    logic [`MAX_VARS_BITS-1:0] max_var_test;
     // BCP CORE
     logic bcp_busy;
     logic conflict;
@@ -15,6 +16,7 @@ module control_test;
     logic bcp_busy_test;
 
     // IMPLY
+    logic reset_imply;
     logic empty_imply;
     logic full_imply;
     logic [`MAX_VARS_BITS-1:0] var_out_imply;
@@ -62,6 +64,7 @@ module control_test;
     logic [`MAX_VARS_BITS-1:0] var_in_vs;
     logic val_in_vs;
     logic unassign_in_vs;
+    // Self
     logic read_vs;
     logic val_out_vs;
     logic unassign_out_vs;
@@ -69,6 +72,14 @@ module control_test;
     logic [`VAR_PER_CLAUSE - 1:0][`MAX_VARS_BITS - 1:0] multi_var_in_vs;
     logic [`VAR_PER_CLAUSE - 1:0] multi_val_out_vs; // For Eval Prep
     logic [`VAR_PER_CLAUSE - 1:0] multi_unassign_out_vs; // For Eval Prep
+    // Extra for testing
+    // For control
+    logic read_vs_c;
+    logic [`MAX_VARS_BITS-1:0] var_in_vs_c;
+    // For test
+    logic read_vs_test;
+    logic [`MAX_VARS_BITS-1:0] var_in_vs_test;
+
     // VAR START END TABLE
     logic [`CLAUSE_TABLE_BITS-1:0] start_clause;
     logic [`CLAUSE_TABLE_BITS-1:0] end_clause;
@@ -127,6 +138,7 @@ module control_test;
         .clock(clock),
         .reset(reset),
         .start(start),
+        .max_var_test(max_var_test),
 
         .bcp_busy(bcp_busy),
         .conflict(conflict),
@@ -151,10 +163,10 @@ module control_test;
         .type_in_trace(type_in_trace_c),
 
         .write_vs(write_vs),
-        .var_in_vs(var_in_vs),
+        .var_in_vs(var_in_vs_c),
         .val_in_vs(val_in_vs),
         .unassign_in_vs(unassign_in_vs),
-        .read_vs(read_vs),
+        .read_vs(read_vs_c),
         .val_out_vs(val_out_vs),
         .unassign_out_vs(unassign_out_vs),
 
@@ -377,20 +389,24 @@ module control_test;
 
     always @(posedge clock) begin
         $display("INITIALIZE: reset = %0b start = %0b state = %0d \
+                \nDECIDE: dec_idx_d_in = %0d var_idx_d = %0d \
                 \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d bcp_clause_id = %0d reset_bcp = %0d bcp_en = %0b \
+                \nDEBUG: bcp_en = %0b ce_en = %0b unit_clause = %0b push_imply = %0b bcp_busy_test = %0b \
                 \nCLAUSE_BCP_INFO: id = %0d mask = %0b pole = %0b var1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d \
                 \nCLAUSE_EVAL: unit_clause = %0b implied_var = %0d new_val = %0b \
-                \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b \
+                \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b \
                 \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
                 \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b \
                 \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
                 \nRESULTS: sat = %0b unsat %0b\n",
                 reset, start, state_out,
+                dec_idx_d_in, var_idx_d,
                 bcp_busy, conflict, bcp_clause_idx, bcp_clause_id, reset_bcp, bcp_en,
+                bcp_en, ce_en, unit_clause, push_imply, bcp_busy_test,
                 bcp_clause_id, clause_info_in[`CLAUSE_DATA_BITS-1:`CLAUSE_DATA_BITS-5], clause_info_in[`CLAUSE_DATA_BITS-6:`CLAUSE_DATA_BITS-10], clause_info_in[`MAX_VARS_BITS*5-1:`MAX_VARS_BITS*4], clause_info_in[`MAX_VARS_BITS*4-1:`MAX_VARS_BITS*3], clause_info_in[`MAX_VARS_BITS*3-1:`MAX_VARS_BITS*2], clause_info_in[`MAX_VARS_BITS*2-1:`MAX_VARS_BITS], clause_info_in[`MAX_VARS_BITS-1:0], 
                 unit_clause, implied_variable, new_val,
-                empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply,
-                empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace,val_in_trace,type_in_trace,
+                empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply, push_imply, var_in_imply, val_in_imply,
+                empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace, val_in_trace, type_in_trace,
                 write_vs, var_in_vs, val_in_vs, unassign_in_vs,
                 start_clause, end_clause, read_var_start_end, var_in_vse,
                 sat, unsat);
@@ -411,7 +427,8 @@ module control_test;
 
         clause_info_in = clause_database[bcp_clause_id];
 
-        var_idx_d = dec_idx_d_in;
+        var_idx_d = dec_idx_d_in+1;
+        val_d = 1'b0;
 
         bcp_busy = bcp_en | ce_en | unit_clause | push_imply | bcp_busy_test;
 
@@ -423,6 +440,9 @@ module control_test;
         push_imply = push_imply_cd | push_imply_test;
         val_in_imply = push_imply_test ? val_in_imply_test : val_in_imply_cd;
         var_in_imply = push_imply_test ? var_in_imply_test : var_in_imply_cd;
+
+        read_vs = read_vs_c | read_vs_test;
+        var_in_vs = read_vs_test ? var_in_vs_test : var_in_vs_c;
     end
 
     // Test sequence
@@ -448,89 +468,42 @@ module control_test;
         @(negedge clock);
         RESET_RAMS();
         @(negedge clock);
-        INITIALIZE_VAR_START_END(101,0,2);
+        INITIALIZE_VAR_START_END(1,0,2);
+        INITIALIZE_VAR_START_END(2,0,2);
         INITIALIZE_CLAUSE_TABLE(0,1);
         INITIALIZE_CLAUSE_TABLE(1,2);
-        INITIALIZE_CLAUSE_DATABASE(1, 5'b11000, 5'b00000, 1, 2, 0, 0 ,0);
-        INITIALIZE_CLAUSE_DATABASE(2, 5'b11000, 5'b10000, 101, 2, 0, 0 ,0);
+        INITIALIZE_CLAUSE_DATABASE(1, 5'b11000, 5'b01000, 1, 2, 0, 0 ,0);
+        INITIALIZE_CLAUSE_DATABASE(2, 5'b11000, 5'b10000, 1, 2, 0, 0 ,0);
         clock = 0;
         reset = 1;
+        max_var_test = 3;
+        bcp_busy_test = 0;
+        push_imply_test = 0;
+        read_vs_test = 0;
+        push_trace_test = 0;
 
         @(negedge clock);
 
-        $display("\nStart Solver at BCP WAIT");
+        $display("\nStart Solver at IDLE");
 
         reset = 0;
-        bcp_busy_test = 1;
-
+        start = 1;
         @(negedge clock);
 
-        bcp_busy_test = 0;
-
-        @(negedge clock);
-
-        @(negedge clock);
-        $display("\nAttempt to pop imply");
-
-        @(negedge clock);
-        reset = 1;
-        @(negedge clock);
-
-
-        reset = 0;
-        bcp_busy_test = 1;
-
-        @(negedge clock);
-
-        bcp_busy_test = 0;
-
-        for (integer i = 0; i < 4; i = i + 1) begin
+        for (integer i = 0; i < 30; i = i + 1) begin
             @(negedge clock);
         end
-        $display("\nShould see UNSAT above here and attemp to pop trace");
-
-        reset = 1;
-        bcp_busy_test = 1;
-        @(negedge clock);
-        reset = 0;
-        for (integer i = 0; i < 3; i = i + 1) begin
-            PUSH_TO_TRACE($random, $random, 1);
-        end
-        PUSH_TO_TRACE($random, $random, 0);
-        @(negedge clock);
-        bcp_busy_test = 0;
-
-        @(negedge clock);
-        for (integer i = 0; i < 3; i = i + 1) begin
-            @(negedge clock);
-        end
-
-        $display("\nShould unassign variables above");
-
-        @(negedge clock);
-        $display("\nShould assign variable opposite val and be forced");
-        @(negedge clock);
-        $display("\nShould send var to var start end");
-        @(negedge clock);
-        bcp_busy_test = 1;
-
-        for (integer i = 0; i < 13; i = i + 1) begin
-            @(negedge clock);
-        end
-
-        bcp_busy_test = 0;
-
-        for (integer i = 0; i < 4; i = i + 1) begin
-            @(negedge clock);
-        end
-        $display("\nShould see unsat again");
-
-        
-
+        $display("Expected SAT : both should be True or both False");
 
         // Wait until something happens???
         // TODO: Copy EECS 470 wait till something happens function to put here
-
+        $display("\nAssignment in Var State\n");
+        for (integer i = 0; i < 10; i = i+1) begin
+            read_vs_test = 1;
+            var_in_vs_test = i;
+            $display("var%0d = %0b ",i, val_out_vs);
+        end
+        $finish;
         $finish;
     end
 endmodule

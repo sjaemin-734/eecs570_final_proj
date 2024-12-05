@@ -5,6 +5,7 @@ module control (
     input clock,
     input reset,
     input start,
+    input [`MAX_VARS_BITS-1:0] max_var_test,
     // BCP CORE
     input bcp_busy,
     input conflict,
@@ -86,7 +87,7 @@ logic from_decider;
 always_comb begin
     state_out = state;
     if (reset) begin
-        state = BCP_WAIT;
+        state = IDLE;
         sat = 1'b0;
         unsat = 1'b0;
     end else begin
@@ -111,14 +112,16 @@ end
 
 always_ff @(posedge clock) begin
     if (reset) begin
-        next_state <= BCP_WAIT;
+        next_state <= IDLE;
         push_trace <= 1'b0;
         pop_imply <= 1'b0;
         pop_trace <= 1'b0;
         write_vs <= 1'b0;
+        val_in_vs <= 1'b0;
         dec_idx_d_in <= 1'b0;
         bcp_en <= 1'b0;
         read_var_start_end <= 1'b0;
+        reset_bcp = 1'b1;
 
     end else begin
         case(state)
@@ -126,6 +129,7 @@ always_ff @(posedge clock) begin
             if (start) begin
                 next_state <= FIND_NEXT;
                 pop_imply <= 1'b1;
+                reset_bcp <= 1'b0;
             end
         end
         FIND_NEXT: begin
@@ -153,7 +157,7 @@ always_ff @(posedge clock) begin
         DECIDE: begin
             read_vs <= 1'b1;
             var_in_vs <= var_idx_d;
-            if (dec_idx_d_in > `MAX_VARS-1) begin
+            if (dec_idx_d_in == max_var_test-1) begin
                 next_state = SAT;
             end else if(unassign_out_vs) begin
                 push_trace <= 1'b1;
