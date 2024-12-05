@@ -70,8 +70,7 @@ enum logic [3:0]{
     BACKPROP,
     BCP_WAIT,       // CHECK:Is it needed to for another transient state?
     SAT,
-    UNSAT,
-    TEST
+    UNSAT
 } state;
 logic [3:0] next_state;
 
@@ -240,9 +239,6 @@ always_ff @(posedge clock) begin
                 var_in_vs <= var_out_trace;
             end
 
-        end
-        TEST: begin
-            next_state <= BCP_INIT;
         end
         BCP_WAIT: begin
             bcp_en <= 1'b0;
