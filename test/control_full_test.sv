@@ -140,7 +140,7 @@ module control_test;
         .start(start),
         .max_var_test(max_var_test),
 
-        .bcp_busy(bcp_busy),
+        .bcp_busy(bcp_en | ce_en | unit_clause | push_imply),            // TODO
         .conflict(conflict),
         .bcp_clause_idx(bcp_clause_idx),
         .reset_bcp(reset_bcp),
@@ -314,6 +314,33 @@ module control_test;
         end
     endtask
 
+    task SET_CLAUSE_DATABASE;
+        input [`MAX_CLAUSES_BITS-1:0] clause_id;
+        input [`CLAUSE_DATA_BITS-1:0] file_input_line;
+        begin
+            clause_database[clause_id] = file_input_line;
+            @(negedge clock);
+        end
+    endtask
+
+    task SET_CLAUSE_TABLE;
+        input [`CLAUSE_TABLE_BITS-1:0] table_idx;
+        input [`MAX_CLAUSES_BITS-1:0] file_input_line;
+        begin
+            clause_table[table_idx] = file_input_line;
+            @(negedge clock);
+        end
+    endtask
+
+    task SET_VAR_START_END_TABLE;
+        input [`MAX_VARS_BITS-1:0] var_id;
+        input [`CLAUSE_TABLE_BITS*2-1:0] file_input_line;
+        begin
+            var_start_end_table[var_id] = file_input_line;
+            @(negedge clock);
+        end
+    endtask
+
     task INITIALIZE_CLAUSE_DATABASE;
         input [`MAX_CLAUSES-1:0] clause_id;
         input [`VAR_PER_CLAUSE-1:0] mask;
@@ -325,6 +352,7 @@ module control_test;
         input [`MAX_VARS_BITS-1:0] var5;
         begin
             clause_database[clause_id] = {mask, pole, var1, var2, var3, var4, var5};
+            @(negedge clock);
         end
     endtask
 
@@ -333,6 +361,7 @@ module control_test;
         input [`MAX_CLAUSES_BITS-1:0] clause_id;
         begin
             clause_table[table_idx] = clause_id;
+            @(negedge clock);
         end
     endtask
 
@@ -342,6 +371,7 @@ module control_test;
         input [`CLAUSE_TABLE_BITS-1:0] end_clause_id;
         begin
             var_start_end_table[var_id] = {start_clause_id, end_clause_id};
+            @(negedge clock);
         end
     endtask
 
@@ -349,7 +379,8 @@ module control_test;
         input [`MAX_VARS_BITS-1:0] config_index;
         input [`MAX_VARS_BITS-1:0] var_id;
         begin
-            decide_config[config_index] = var_id; 
+            decide_config[config_index] = var_id;
+            @(negedge clock);
         end
     endtask
 
@@ -472,8 +503,8 @@ module control_test;
         INITIALIZE_VAR_START_END(2,0,2);
         INITIALIZE_CLAUSE_TABLE(0,1);
         INITIALIZE_CLAUSE_TABLE(1,2);
-        INITIALIZE_CLAUSE_DATABASE(1, 5'b11000, 5'b01000, 1, 2, 0, 0 ,0);
-        INITIALIZE_CLAUSE_DATABASE(2, 5'b11000, 5'b10000, 1, 2, 0, 0 ,0);
+        INITIALIZE_CLAUSE_DATABASE(1, 5'b11000, 5'b10000, 1, 2, 0, 0 ,0);
+        INITIALIZE_CLAUSE_DATABASE(2, 5'b11000, 5'b01000, 1, 2, 0, 0 ,0);
         clock = 0;
         reset = 1;
         max_var_test = 3;
@@ -489,21 +520,30 @@ module control_test;
         reset = 0;
         start = 1;
         @(negedge clock);
+        start = 0;
+        @(negedge clock);
 
-        for (integer i = 0; i < 30; i = i + 1) begin
+        for (integer i = 0; i < 999; i = i + 1) begin
+            if (unsat | sat) break;
             @(negedge clock);
         end
+        @(negedge clock);
         $display("Expected SAT : both should be True or both False");
 
         // Wait until something happens???
         // TODO: Copy EECS 470 wait till something happens function to put here
-        $display("\nAssignment in Var State\n");
-        for (integer i = 0; i < 10; i = i+1) begin
-            read_vs_test = 1;
-            var_in_vs_test = i;
-            $display("var%0d = %0b ",i, val_out_vs);
-        end
-        $finish;
+        // $display("\nAssignment in Var State\n");
+        // for (integer i = 0; i < 10; i = i+1) begin
+        //     read_vs_test = 1;
+        //     var_in_vs_test = i;
+        //     $display("var%0d = %0b, (sanity check) assigned = %0b",i, val_out_vs, unassign_out_vs);
+        //     @(negedge clock);
+        // end
+
+        // bcp_busy_test = 1;
+        // @(negedge clock);
+        // bcp_busy_test = 0;
+
         $finish;
     end
 endmodule

@@ -84,13 +84,14 @@ logic [`CLAUSE_TABLE_BITS-1:0] i;
 logic from_decider;
 
 always_comb begin
-    state_out = state;
     if (reset) begin
         state = IDLE;
+        state_out = IDLE;
         sat = 1'b0;
         unsat = 1'b0;
     end else begin
         state = next_state;
+        state_out = next_state;
         case(state)
             DECIDE: begin
                 from_decider = 1;
@@ -156,7 +157,7 @@ always_ff @(posedge clock) begin
         DECIDE: begin
             read_vs <= 1'b1;
             var_in_vs <= var_idx_d;
-            if (dec_idx_d_in == max_var_test-1) begin
+            if (dec_idx_d_in == max_var_test) begin
                 next_state = SAT;
             end else if(unassign_out_vs) begin
                 push_trace <= 1'b1;

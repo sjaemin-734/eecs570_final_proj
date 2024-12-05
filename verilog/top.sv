@@ -164,6 +164,9 @@ module top(
         .var_in_vs(var_in_vs),
         .val_in_vs(val_in_vs),
         .unassign_in_vs(unassign_in_vs),
+        .read_vs(read_vs),
+        .val_out_vs(val_out_vs),
+        .unassign_out_vs(unassign_out_vs),
 
         .start_clause(start_clause),
         .end_clause(end_clause),
@@ -343,6 +346,7 @@ module top(
     always_comb begin
         reset_vs = reset;
         reset_trace = reset;
+        reset_ds = reset;
         if (reset) begin
             unsat = 1'b0;
             sat = 1'b0;
