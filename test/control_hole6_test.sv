@@ -140,7 +140,7 @@ module control_test;
         .start(start),
         .max_var_test(max_var_test),
 
-        .bcp_busy(bcp_en | ce_en | unit_clause | push_imply),            // TODO
+        .bcp_busy(bcp_en || ce_en || unit_clause || push_imply),            // TODO
         .conflict(conflict),
         .bcp_clause_idx(bcp_clause_idx),
         .reset_bcp(reset_bcp),
@@ -463,18 +463,18 @@ module control_test;
         var_idx_d = dec_idx_d_in+1;
         val_d = 1'b0;
 
-        bcp_busy = bcp_en | ce_en | unit_clause | push_imply | bcp_busy_test;
+        bcp_busy = bcp_en || ce_en || unit_clause || push_imply || bcp_busy_test;
 
-        push_trace = push_trace_c | push_trace_test;
+        push_trace = push_trace_c || push_trace_test;
         val_in_trace = push_trace_test ? val_in_trace_test : val_in_trace_c;
         var_in_trace = push_trace_test ? var_in_trace_test : var_in_trace_c;
         type_in_trace = push_trace_test ? type_in_trace_test : type_in_trace_c;
         
-        push_imply = push_imply_cd | push_imply_test;
+        push_imply = push_imply_cd || push_imply_test;
         val_in_imply = push_imply_test ? val_in_imply_test : val_in_imply_cd;
         var_in_imply = push_imply_test ? var_in_imply_test : var_in_imply_cd;
 
-        read_vs = read_vs_c | read_vs_test;
+        read_vs = read_vs_c || read_vs_test;
         var_in_vs = read_vs_test ? var_in_vs_test : var_in_vs_c;
     end
 
@@ -1026,7 +1026,7 @@ module control_test;
         start = 0;
         @(negedge clock);
 
-        while (~unsat & ~sat) begin
+        while (!unsat && !sat) begin
             @(negedge clock);
         end
 
