@@ -34,9 +34,9 @@ var_info [`MAX_VARS-1:0] vals;
 
 always_comb begin
     if (reset) begin
-        conflict = 0;
+        conflict_check = 0;
     end else if (!conflict) begin
-        conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
+        conflict_check = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
     end
 end
 
@@ -63,8 +63,8 @@ always_ff @(posedge clock) begin
         var_idx_out <= var_idx_in;
         val_out <= val_in;
         imply_stack_push_en <= en;
-
     end
+    conflict = conflict_check;
 end
 
 
