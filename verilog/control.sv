@@ -78,6 +78,10 @@ logic [3:0] next_state;
 // variable to use for BCP
 logic [`MAX_VARS_BITS-1:0] var_in_bcp;
 
+// variable in for decide
+logic [`MAX_VARS_BITS-1:0] var_to_consider;
+logic val_to_consider;
+
 // Index through start to end
 logic [`CLAUSE_TABLE_BITS-1:0] i;
 
@@ -150,6 +154,10 @@ always_ff @(posedge clock) begin
             pop_imply <= 1'b0;
             if (empty_imply) begin
                 read_d <= 1'b1;
+                read_vs <= 1'b1;
+                var_in_vs <= var_idx_d;
+                var_to_consider <= var_idx_d;
+                val_to_consider <= val_d;
                 next_state <= DECIDE;
             end else begin
                 push_trace <= 1'b1;
@@ -180,20 +188,22 @@ always_ff @(posedge clock) begin
                 push_ds <= 1'b1;
 
                 unassign_in_vs <= 1'b0;
-                val_in_vs <= val_d;
-                var_in_vs <= var_idx_d;
+                val_in_vs <= val_to_consider;
+                var_in_vs <= var_to_consider;
 
-                val_in_trace <= val_d;
-                var_in_trace <= var_idx_d;
+                val_in_trace <= val_to_consider;
+                var_in_trace <= var_to_consider;
                 type_in_trace <= 1'b0;
 
                 dec_idx_ds_in <= dec_idx_d_in;
 
-                var_in_bcp <= var_idx_d;
+                var_in_bcp <= var_to_consider;
 
                 next_state <= BCP_INIT;
             end else begin
                 dec_idx_d_in <= dec_idx_d_in+1;
+                var_to_consider <= var_idx_d;
+                val_to_consider <= val_d;
             end
             // TODO:decide module gives var_out_imply, val_out_imply, type_out_imply (D)
             // TODO:Update Var State Table with unassign = 0 & val = val_out_imply
@@ -207,7 +217,7 @@ always_ff @(posedge clock) begin
             pop_ds <= 1'b0;
             // Receive start and end clause IDs for var_out_imply
 
-            dec_idx_d_in <= dec_idx_change ? (from_decider ? dec_idx_d_in+1 : dec_idx_ds_out) : dec_idx_d_in;
+            dec_idx_d_in <= dec_idx_change ? (from_decider ? dec_idx_d_in : dec_idx_ds_out) : dec_idx_d_in;
             read_var_start_end <= 1'b1;
             var_in_vse <= var_in_bcp;
             i <= 0;
