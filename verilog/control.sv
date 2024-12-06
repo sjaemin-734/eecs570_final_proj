@@ -57,7 +57,8 @@ module control (
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
     output logic unsat,
     // State debug
-    output logic [3:0] state_out
+    output logic [3:0] state_out,
+    is_conflict
 );
 
 // state variables
