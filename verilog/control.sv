@@ -57,8 +57,8 @@ module control (
     output logic sat,                     // Have separate UNSAT/SAT variable just in case
     output logic unsat,
     // State debug
-    output logic [3:0] state_out,
-    is_conflict
+    output logic [3:0] state_out
+    // is_conflict
 );
 
 // state variables
@@ -82,7 +82,7 @@ logic [`MAX_VARS_BITS-1:0] var_in_bcp;
 logic [`CLAUSE_TABLE_BITS-1:0] i;
 
 // Keep conflict line
-logic is_conflict;
+// logic is_conflict;
 
 // Tells Decider which index to use
 logic from_decider;
@@ -93,17 +93,17 @@ always_comb begin
         state_out = IDLE;
         sat = 1'b0;
         unsat = 1'b0;
-        is_conflict = 1'b0;
+        // is_conflict = 1'b0;
     end else begin
         state = next_state;
         state_out = next_state;
-        if (conflict) is_conflict = 1'b1;
+        // if (conflict) is_conflict = 1'b1;
         case(state)
             DECIDE: begin
                 from_decider = 1'b1;
             end
             BACKPROP: begin
-                is_conflict = 1'b0;
+                // is_conflict = 1'b0;
                 from_decider = 1'b0;
             end
             SAT: begin
@@ -250,7 +250,7 @@ always_ff @(posedge clock) begin
         end
         BCP_WAIT: begin
             bcp_en <= 1'b0;
-            if (is_conflict) begin
+            if (conflict) begin
                 next_state <= BACKPROP;
                 pop_trace <= 1'b1;
             end else if (~bcp_busy) begin

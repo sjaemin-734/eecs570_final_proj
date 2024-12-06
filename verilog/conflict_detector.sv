@@ -16,7 +16,7 @@ module conflict_detector(
     input reset,
     input en,                   // From Clause Evaluator
 
-    output conflict,
+    output logic conflict,
     output logic [`MAX_VARS_BITS-1:0] var_idx_out,
     output logic val_out,
     output logic imply_stack_push_en
@@ -32,7 +32,14 @@ typedef struct packed {
 
 var_info [`MAX_VARS-1:0] vals;
 
-assign conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
+always_comb begin
+    if (reset) begin
+        conflict = 0;
+    end else if (!conflict) begin
+        conflict = vals[var_idx_in].valid && (val_in != vals[var_idx_in].val) && en;
+    end
+end
+
 
 integer i;
 always_ff @(posedge clock) begin

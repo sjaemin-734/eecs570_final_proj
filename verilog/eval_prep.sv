@@ -32,13 +32,13 @@ wire [`VAR_PER_CLAUSE-1:0][`MAX_VARS_BITS-1:0] variable; // Addresses
 wire [`VAR_PER_CLAUSE-1:0] unassign;
 wire [`VAR_PER_CLAUSE-1:0] val;
     
-assign clause_mask = clause_info_in[54:50];
-assign clause_pole = clause_info_in[49:45];
-assign variable = clause_info_in[44:0];
+assign clause_mask = clause_info_in[`CLAUSE_DATA_BITS-1:`CLAUSE_DATA_BITS-5];
+assign clause_pole = clause_info_in[`CLAUSE_DATA_BITS-6:`CLAUSE_DATA_BITS-10];
+assign variable = clause_info_in[`CLAUSE_DATA_BITS-11:0];
 assign unassign = unassign_in;
 assign val = val_in;
 
-assign idx_out = clause_info_in[44:0]; // To the Var State Table
+assign idx_out = clause_info_in[`CLAUSE_DATA_BITS-11:0]; // To the Var State Table
 
 always_ff @(posedge clock) begin
       if(reset) begin
