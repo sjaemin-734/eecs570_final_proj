@@ -86,6 +86,7 @@ logic [`CLAUSE_TABLE_BITS-1:0] i;
 
 // Tells Decider which index to use
 logic from_decider;
+logic dec_idx_change;
 
 always_comb begin
     if (reset) begin
@@ -93,6 +94,7 @@ always_comb begin
         state_out = IDLE;
         sat = 1'b0;
         unsat = 1'b0;
+        dec_idx_change = 1'b0;
         // is_conflict = 1'b0;
     end else begin
         state = next_state;
@@ -101,10 +103,15 @@ always_comb begin
         case(state)
             DECIDE: begin
                 from_decider = 1'b1;
+                dec_idx_change = 1'b1;
+            end
+            BCP_WAIT: begin
+                dec_idx_change = 1'b0;
             end
             BACKPROP: begin
                 // is_conflict = 1'b0;
                 from_decider = 1'b0;
+                dec_idx_change = 1'b1;
             end
             SAT: begin
                 sat = 1'b1;
@@ -200,7 +207,7 @@ always_ff @(posedge clock) begin
             pop_ds <= 1'b0;
             // Receive start and end clause IDs for var_out_imply
 
-            dec_idx_d_in <= from_decider ? dec_idx_d_in+1 : dec_idx_ds_out;
+            dec_idx_d_in <= dec_idx_change ? (from_decider ? dec_idx_d_in+1 : dec_idx_ds_out) : dec_idx_d_in;
             read_var_start_end <= 1'b1;
             var_in_vse <= var_in_bcp;
             i <= 0;

@@ -31,6 +31,7 @@ typedef struct packed {
 } var_info;
 
 var_info [`MAX_VARS-1:0] vals;
+logic conflict_check;
 
 always_comb begin
     if (reset) begin
