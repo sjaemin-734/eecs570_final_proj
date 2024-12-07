@@ -126,7 +126,7 @@ module control_test;
 
     // RAMs
     logic reset_ram;
-    logic [`MAX_VARS-1:0][`MAX_VARS_BITS-1:0] decide_config;
+    logic [`MAX_VARS-1:0][`MAX_VARS_BITS:0] decide_config;      // {var_id, val}
     logic [`MAX_VARS-1:0][`CLAUSE_TABLE_BITS*2-1:0] var_start_end_table;
     logic [`CLAUSE_TABLE_SIZE-1:0][`MAX_CLAUSES_BITS-1:0] clause_table;
     logic [`MAX_CLAUSES-1:0][`CLAUSE_DATA_BITS-1:0] clause_database;
@@ -341,6 +341,15 @@ module control_test;
         end
     endtask
 
+    task SET_DECIDE_CONFIG;
+        input [`MAX_VARS_BITS-1:0] config_index;
+        input [`MAX_VARS_BITS:0] file_input_line;
+        begin
+            decide_config[config_index] = file_input_line;
+            @(negedge clock);
+        end
+    endtask
+
     task INITIALIZE_CLAUSE_DATABASE;
         input [`MAX_CLAUSES-1:0] clause_id;
         input [`VAR_PER_CLAUSE-1:0] mask;
@@ -489,8 +498,11 @@ module control_test;
 
         clause_info_in = clause_database[bcp_clause_id];
 
-        var_idx_d = dec_idx_d_in+1;
-        val_d = 1'b0;
+        var_idx_d = decide_config[dec_idx_d_in][`MAX_VARS_BITS:1];
+        val_d = decide_config[dec_idx_d_in][0];
+
+        // var_idx_d = dec_idx_d_in+1;
+        // val_d = 1'b0;
 
         bcp_busy = bcp_en || ce_en || unit_clause || push_imply || bcp_busy_test;
 
@@ -1460,7 +1472,57 @@ module control_test;
         SET_CLAUSE_TABLE(652, 10'b0011000101);
         SET_CLAUSE_TABLE(653, 10'b0011001111);
 
-
+        // SET DECIDE CONFIG
+        SET_DECIDE_CONFIG(0, 10'b0000000011);
+        SET_DECIDE_CONFIG(1, 10'b0000000101);
+        SET_DECIDE_CONFIG(2, 10'b0000000111);
+        SET_DECIDE_CONFIG(3, 10'b0000001000);
+        SET_DECIDE_CONFIG(4, 10'b0000001010);
+        SET_DECIDE_CONFIG(5, 10'b0000001101);
+        SET_DECIDE_CONFIG(6, 10'b0000001111);
+        SET_DECIDE_CONFIG(7, 10'b0000010000);
+        SET_DECIDE_CONFIG(8, 10'b0000010011);
+        SET_DECIDE_CONFIG(9, 10'b0000010100);
+        SET_DECIDE_CONFIG(10, 10'b0000010111);
+        SET_DECIDE_CONFIG(11, 10'b0000011001);
+        SET_DECIDE_CONFIG(12, 10'b0000011010);
+        SET_DECIDE_CONFIG(13, 10'b0000011101);
+        SET_DECIDE_CONFIG(14, 10'b0000011111);
+        SET_DECIDE_CONFIG(15, 10'b0000100001);
+        SET_DECIDE_CONFIG(16, 10'b0000100010);
+        SET_DECIDE_CONFIG(17, 10'b0000100100);
+        SET_DECIDE_CONFIG(18, 10'b0000100111);
+        SET_DECIDE_CONFIG(19, 10'b0000101001);
+        SET_DECIDE_CONFIG(20, 10'b0000101011);
+        SET_DECIDE_CONFIG(21, 10'b0000101100);
+        SET_DECIDE_CONFIG(22, 10'b0000101111);
+        SET_DECIDE_CONFIG(23, 10'b0000110001);
+        SET_DECIDE_CONFIG(24, 10'b0000110010);
+        SET_DECIDE_CONFIG(25, 10'b0000110101);
+        SET_DECIDE_CONFIG(26, 10'b0000110110);
+        SET_DECIDE_CONFIG(27, 10'b0000111001);
+        SET_DECIDE_CONFIG(28, 10'b0000111010);
+        SET_DECIDE_CONFIG(29, 10'b0000111100);
+        SET_DECIDE_CONFIG(30, 10'b0000111110);
+        SET_DECIDE_CONFIG(31, 10'b0001000000);
+        SET_DECIDE_CONFIG(32, 10'b0001000011);
+        SET_DECIDE_CONFIG(33, 10'b0001000101);
+        SET_DECIDE_CONFIG(34, 10'b0001000111);
+        SET_DECIDE_CONFIG(35, 10'b0001001000);
+        SET_DECIDE_CONFIG(36, 10'b0001001010);
+        SET_DECIDE_CONFIG(37, 10'b0001001100);
+        SET_DECIDE_CONFIG(38, 10'b0001001111);
+        SET_DECIDE_CONFIG(39, 10'b0001010001);
+        SET_DECIDE_CONFIG(40, 10'b0001010011);
+        SET_DECIDE_CONFIG(41, 10'b0001010101);
+        SET_DECIDE_CONFIG(42, 10'b0001010110);
+        SET_DECIDE_CONFIG(43, 10'b0001011001);
+        SET_DECIDE_CONFIG(44, 10'b0001011010);
+        SET_DECIDE_CONFIG(45, 10'b0001011100);
+        SET_DECIDE_CONFIG(46, 10'b0001011111);
+        SET_DECIDE_CONFIG(47, 10'b0001100001);
+        SET_DECIDE_CONFIG(48, 10'b0001100010);
+        SET_DECIDE_CONFIG(49, 10'b0001100101);
 
 
         @(negedge clock);
