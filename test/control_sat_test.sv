@@ -418,8 +418,9 @@ module control_test;
         end
     endtask
 
-    always @(posedge clock) begin
-        $display("INITIALIZE: reset = %0b start = %0b state = %0d \
+    task SHOW_DEBUG;
+        begin
+            $display("INITIALIZE: reset = %0b start = %0b state = %0d \
                 \nDECIDE: dec_idx_d_in = %0d var_idx_d = %0d val_d = %0b \
                 \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d bcp_clause_id = %0d reset_bcp = %0d bcp_en = %0b \
                 \nDEBUG: bcp_en = %0b ce_en = %0b unit_clause = %0b push_imply = %0b bcp_busy_test = %0b \
@@ -443,7 +444,35 @@ module control_test;
                 write_vs, var_in_vs, val_in_vs, unassign_in_vs, read_vs, val_out_vs, unassign_out_vs,
                 start_clause, end_clause, read_var_start_end, var_in_vse,
                 sat, unsat);
-    end
+        end
+    endtask
+
+    // always @(posedge clock) begin
+    //     $display("INITIALIZE: reset = %0b start = %0b state = %0d \
+    //             \nDECIDE: dec_idx_d_in = %0d var_idx_d = %0d val_d = %0b \
+    //             \nBCP_CORE: bcp_busy = %0b conflict = %0b bcp_clause_idx = %0d bcp_clause_id = %0d reset_bcp = %0d bcp_en = %0b \
+    //             \nDEBUG: bcp_en = %0b ce_en = %0b unit_clause = %0b push_imply = %0b bcp_busy_test = %0b \
+    //             \nCLAUSE_BCP_INFO: id = %0d mask = %0b pole = %0b var1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d \
+    //             \nCLAUSE_EVAL_INPUTS: unassign = %0b clause_mask = %0b clause_pole = %0b val = %0b var1 = %0d var2 = %0d var3 = %0d var4 = %0d var5 = %0d \
+    //             \nCLAUSE_EVAL: ce_en = %0b unit_clause = %0b implied_var = %0d new_val = %0b \
+    //             \nIMPLY: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b \
+    //             \nTRACE: empty = %0b var_out = %0d val_out = %0b type_out = %0b pop = %0b push = %0b var_in = %0d val_in = %0b type_in = %0b \
+    //             \nVAR STATE: write = %0b var_in = %0d val_in = %0b unassign_in = %0b read_vs = %0b val_out_vs = %0b unassign_out_vs = %0b \
+    //             \nVAR START END TABLE: start = %0d end = %0d read = %0b var_in = %0d \
+    //             \nRESULTS: sat = %0b unsat %0b\n",
+    //             reset, start, state_out,
+    //             dec_idx_d_in, var_idx_d, val_d,
+    //             bcp_busy, conflict, bcp_clause_idx, bcp_clause_id, reset_bcp, bcp_en,
+    //             bcp_en, ce_en, unit_clause, push_imply, bcp_busy_test,
+    //             bcp_clause_id, clause_info_in[`CLAUSE_DATA_BITS-1:`CLAUSE_DATA_BITS-5], clause_info_in[`CLAUSE_DATA_BITS-6:`CLAUSE_DATA_BITS-10], clause_info_in[`MAX_VARS_BITS*5-1:`MAX_VARS_BITS*4], clause_info_in[`MAX_VARS_BITS*4-1:`MAX_VARS_BITS*3], clause_info_in[`MAX_VARS_BITS*3-1:`MAX_VARS_BITS*2], clause_info_in[`MAX_VARS_BITS*2-1:`MAX_VARS_BITS], clause_info_in[`MAX_VARS_BITS-1:0], 
+    //             unassign_in_ce, clause_mask_in_ce, clause_pole_in_ce, val_in_ce, variable_in_ce[4], variable_in_ce[3], variable_in_ce[2], variable_in_ce[1], variable_in_ce[0],
+    //             ce_en, unit_clause, implied_variable, new_val,
+    //             empty_imply, var_out_imply, val_out_imply, type_out_imply, pop_imply, push_imply, var_in_imply, val_in_imply,
+    //             empty_trace, var_out_trace, val_out_trace, type_out_trace, pop_trace, push_trace, var_in_trace, val_in_trace, type_in_trace,
+    //             write_vs, var_in_vs, val_in_vs, unassign_in_vs, read_vs, val_out_vs, unassign_out_vs,
+    //             start_clause, end_clause, read_var_start_end, var_in_vse,
+    //             sat, unsat);
+    // end
 
 
     always_comb begin
@@ -567,23 +596,25 @@ module control_test;
             @(negedge clock);
         end
 
+        SHOW_DEBUG();
+
 
         // for (integer i = 0; i < 999; i = i + 1) begin
         //     if (unsat | sat) break;
         //     @(negedge clock);
         // end
         @(negedge clock);
-        $display("Expected UNSAT");
+        $display("Expected SAT");
 
         // Wait until something happens???
         // TODO: Copy EECS 470 wait till something happens function to put here
-        // $display("\nAssignment in Var State\n");
-        // for (integer i = 0; i < 10; i = i+1) begin
-        //     read_vs_test = 1;
-        //     var_in_vs_test = i;
-        //     $display("var%0d = %0b, (sanity check) assigned = %0b",i, val_out_vs, unassign_out_vs);
-        //     @(negedge clock);
-        // end
+        $display("\nAssignment in Var State\n");
+        for (integer i = 0; i < max_var_test+2; i = i+1) begin
+            read_vs_test = 1;
+            var_in_vs_test = i+1;
+            $display("var%0d = %0b, (sanity check) assigned = %0b",i+1, val_out_vs, unassign_out_vs);
+            @(negedge clock);
+        end
 
         // bcp_busy_test = 1;
         // @(negedge clock);

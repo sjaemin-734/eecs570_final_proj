@@ -1,0 +1,110 @@
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+Chronologic VCS simulator copyright 1991-2023
+Contains Synopsys proprietary information.
+Compiler version V-2023.12-SP2-1_Full64; Runtime version V-2023.12-SP2-1_Full64;  Dec  6 19:53 2024
+
+Reset
+
+Start Solver at IDLE
+INITIALIZE: reset = 0 start = 1 state = 0                 
+DECIDE: dec_idx_d_in = 0 var_idx_d = 1 val_d = 0                 
+BCP_CORE: bcp_busy = x conflict = x bcp_clause_idx = x bcp_clause_id = x reset_bcp = 1 bcp_en = 0                 
+DEBUG: bcp_en = 0 ce_en = x unit_clause = 0 push_imply = 0 bcp_busy_test = 0                 
+CLAUSE_BCP_INFO: id = x mask = xxxxx pole = xxxxx var1 = x var2 = x var3 = x var4 = x var5 = x                 
+CLAUSE_EVAL_INPUTS: unassign = xxxxx clause_mask = xxxxx clause_pole = xxxxx val = xxxxx var1 = x var2 = x var3 = x var4 = x var5 = x                 
+CLAUSE_EVAL: ce_en = x unit_clause = 0 implied_var = 0 new_val = 0                 
+IMPLY: empty = 1 var_out = 0 val_out = 0 type_out = 0 pop = 0 push = 0 var_in = 0 val_in = 0                 
+TRACE: empty = 1 var_out = 0 val_out = 0 type_out = 0 pop = 0 push = 0 var_in = x val_in = x type_in = x                 
+VAR STATE: write = 0 var_in = x val_in = 0 unassign_in = x                 
+VAR START END TABLE: start = x end = x read = 0 var_in = x                 
+RESULTS: sat = 0 unsat 0
+
+INITIALIZE: reset = 0 start = 0 state = 1                 
+DECIDE: dec_idx_d_in = 0 var_idx_d = 1 val_d = 0                 
+BCP_CORE: bcp_busy = 0 conflict = 0 bcp_clause_idx = x bcp_clause_id = x reset_bcp = 0 bcp_en = 0                 
+DEBUG: bcp_en = 0 ce_en = 0 unit_clause = 0 push_imply = 0 bcp_busy_test = 0                 
+CLAUSE_BCP_INFO: id = x mask = xxxxx pole = xxxxx var1 = x var2 = x var3 = x var4 = x var5 = x                 
+CLAUSE_EVAL_INPUTS: unassign = 0 clause_mask = 0 clause_pole = 0 val = 0 var1 = 0 var2 = 0 var3 = 0 var4 = 0 var5 = 0                 
+CLAUSE_EVAL: ce_en = 0 unit_clause = 0 implied_var = 0 new_val = 0                 
+IMPLY: empty = 1 var_out = 0 val_out = 0 type_out = 0 pop = 1 push = 0 var_in = 0 val_in = 0                 
+TRACE: empty = 1 var_out = 0 val_out = 0 type_out = 0 pop = 0 push = 0 var_in = x val_in = x type_in = x                 
+VAR STATE: write = 0 var_in = x val_in = 0 unassign_in = x                 
+VAR START END TABLE: start = x end = x read = 0 var_in = x                 
+RESULTS: sat = 0 unsat 0
+
+INITIALIZE: reset = 0 start = 0 state = 7                 
+DECIDE: dec_idx_d_in = 50 var_idx_d = 51 val_d = 0                 
+BCP_CORE: bcp_busy = 0 conflict = 0 bcp_clause_idx = 604 bcp_clause_id = 201 reset_bcp = 0 bcp_en = 0                 
+DEBUG: bcp_en = 0 ce_en = 0 unit_clause = 0 push_imply = 0 bcp_busy_test = 0                 
+CLAUSE_BCP_INFO: id = 201 mask = 11100 pole = 10011 var1 = 9 var2 = 18 var3 = 46 var4 = 0 var5 = 0                 
+CLAUSE_EVAL_INPUTS: unassign = 11 clause_mask = 11100 clause_pole = 10011 val = 1000 var1 = 9 var2 = 18 var3 = 46 var4 = 0 var5 = 0                 
+CLAUSE_EVAL: ce_en = 0 unit_clause = 0 implied_var = 0 new_val = 0                 
+IMPLY: empty = 1 var_out = 0 val_out = 0 type_out = 0 pop = 0 push = 0 var_in = 0 val_in = 0                 
+TRACE: empty = 0 var_out = 0 val_out = 0 type_out = 0 pop = 0 push = 0 var_in = 46 val_in = 0 type_in = 0                 
+VAR STATE: write = 0 var_in = 51 val_in = 0 unassign_in = 0                 
+VAR START END TABLE: start = 592 end = 605 read = 0 var_in = 46                 
+RESULTS: sat = 1 unsat 0
+
+Expected UNSAT
+
+Assignment in Var State
+
+var0 = 0, (sanity check) assigned = 0
+var1 = 1, (sanity check) assigned = 1
+var2 = 0, (sanity check) assigned = 1
+var3 = 1, (sanity check) assigned = 1
+var4 = 1, (sanity check) assigned = 1
+var5 = 1, (sanity check) assigned = 1
+var6 = 0, (sanity check) assigned = 1
+var7 = 0, (sanity check) assigned = 1
+var8 = 1, (sanity check) assigned = 1
+var9 = 0, (sanity check) assigned = 1
+var10 = 1, (sanity check) assigned = 1
+var11 = 1, (sanity check) assigned = 1
+var12 = 1, (sanity check) assigned = 1
+var13 = 0, (sanity check) assigned = 1
+var14 = 1, (sanity check) assigned = 1
+var15 = 1, (sanity check) assigned = 1
+var16 = 0, (sanity check) assigned = 1
+var17 = 1, (sanity check) assigned = 1
+var18 = 1, (sanity check) assigned = 1
+var19 = 1, (sanity check) assigned = 1
+var20 = 0, (sanity check) assigned = 1
+var21 = 0, (sanity check) assigned = 1
+var22 = 0, (sanity check) assigned = 1
+var23 = 1, (sanity check) assigned = 1
+var24 = 1, (sanity check) assigned = 1
+var25 = 1, (sanity check) assigned = 1
+var26 = 0, (sanity check) assigned = 1
+var27 = 0, (sanity check) assigned = 1
+var28 = 1, (sanity check) assigned = 1
+var29 = 0, (sanity check) assigned = 1
+var30 = 0, (sanity check) assigned = 1
+var31 = 0, (sanity check) assigned = 1
+var32 = 1, (sanity check) assigned = 1
+var33 = 0, (sanity check) assigned = 1
+var34 = 1, (sanity check) assigned = 1
+var35 = 0, (sanity check) assigned = 1
+var36 = 1, (sanity check) assigned = 1
+var37 = 1, (sanity check) assigned = 1
+var38 = 0, (sanity check) assigned = 1
+var39 = 1, (sanity check) assigned = 1
+var40 = 1, (sanity check) assigned = 1
+var41 = 1, (sanity check) assigned = 1
+var42 = 0, (sanity check) assigned = 1
+var43 = 1, (sanity check) assigned = 1
+var44 = 0, (sanity check) assigned = 1
+var45 = 0, (sanity check) assigned = 1
+var46 = 0, (sanity check) assigned = 1
+var47 = 0, (sanity check) assigned = 1
+var48 = 1, (sanity check) assigned = 1
+var49 = 1, (sanity check) assigned = 1
+var50 = 1, (sanity check) assigned = 1
+var51 = 0, (sanity check) assigned = 0
+$finish called from file "test/control_uf50n03_test.sv", line 1516.
+$finish at simulation time              1199270
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 1199270
+CPU Time:      0.640 seconds;       Data structure size:   0.1Mb
+Fri Dec  6 19:53:43 2024
