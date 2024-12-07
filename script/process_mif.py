@@ -5,6 +5,7 @@ PREPROCESSED_DIR = './preprocessed/'
 START_END_SUFFIX = 'var_start_end_table'
 CLAUSE_TABLE_SUFFIX = 'clause_table'
 CLAUSE_DB_SUFFIX = 'clause_database'
+DECIDER_SUFFIX = 'decider'
 
 def convert_mif():
 
@@ -14,7 +15,7 @@ def convert_mif():
     # Order: start/end table, clause db, clause table
 
     # List all mif files except for the deciders
-    mif_files = [_ for _ in files if 'decider' not in _]
+    mif_files = [_ for _ in files]
     
     # List original file names
     prefixes = [_.split('_', 1)[0] for _ in mif_files]
@@ -22,8 +23,8 @@ def convert_mif():
     prefixes = set(prefixes)
     prefixes = list(prefixes)
     
-    files = [START_END_SUFFIX, CLAUSE_DB_SUFFIX, CLAUSE_TABLE_SUFFIX]
-    verilog_cmds = ['SET_VAR_START_END_TABLE', 'SET_CLAUSE_DATABASE', 'SET_CLAUSE_TABLE']
+    files = [START_END_SUFFIX, CLAUSE_DB_SUFFIX, CLAUSE_TABLE_SUFFIX, DECIDER_SUFFIX]
+    verilog_cmds = ['SET_VAR_START_END_TABLE', 'SET_CLAUSE_DATABASE', 'SET_CLAUSE_TABLE', 'SET_DECIDER']
 
     for prefix in prefixes:
         outfile = open(f"{PREPROCESSED_DIR}{prefix}_v.txt", 'w+')
