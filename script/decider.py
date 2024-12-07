@@ -28,6 +28,7 @@ basefile = basefile.split(".")[0]  # Remove file extension from input file
 write_decider = open(f"preprocessed/{basefile}_decider.txt", "w+")
 
 num_vars = None
+var_decider_list = []
 
 # Find number of variables in SAT problem
 for line in read_handler:
@@ -51,7 +52,13 @@ for var in range(1, num_vars+1):
 
     # Convert var and random_decision to binary
     var_idx_binary = f"{var:0{MAX_VARS_BITS}b}"
-    write_decider.write(f"{var_idx_binary}{random_decision}\n")
+    # Throw everything into a list first to randomize variable assignment order
+    var_decider_list.append(f"{var_idx_binary}{random_decision}\n")
+    
+# Write variable assignments to .mif in random order
+random.shuffle(var_decider_list)
+for i in var_decider_list:
+    write_decider.write(i)
 
 # Pad the remaining area in memory with 0's
 pad_decider = "0" * (MAX_VARS_BITS + 1) + "\n"
