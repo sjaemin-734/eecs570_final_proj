@@ -47,3 +47,15 @@ def check_satisfaction(assignments, cnf_clauses):
         if not evaluate_clause(clause, assignments):
             return False  # If any clause is unsatisfied, the CNF is unsatisfied
     return True
+
+
+with open("script/assignments.txt", 'r') as f:
+    fas = f.read()
+
+with open("script/copy_cnf.txt", 'r') as f:
+    fcnf = f.read()
+
+pas = parse_assignments(fas)
+pcnf = parse_cnf(fcnf)
+
+print(check_satisfaction(pas, pcnf))
