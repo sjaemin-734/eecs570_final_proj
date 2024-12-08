@@ -499,7 +499,7 @@ module control_test;
         @(negedge clock);
         
 
-PYTHON : ADD INITIALIZATION STUFF HERE & CHANGE VARIABLE COUNT BELOW 
+// PYTHON : ADD INITIALIZATION STUFF HERE & CHANGE VARIABLE COUNT BELOW 
         max_var_test = 50;      // NUMBER OF VARIABLES IN PROBLEM
 
         @(negedge clock);
