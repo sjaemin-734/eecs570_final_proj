@@ -1055,7 +1055,7 @@ module control_test;
         SET_DECIDER(47, 10'b0001001100);
         SET_DECIDER(48, 10'b0001011100);
 
-        max_var_test = 42;    // NUMBER OF VARIABLES IN PROBLEM
+        max_var_test = 49;    // NUMBER OF VARIABLES IN PROBLEM
 
         @(negedge clock);
         clock = 0;

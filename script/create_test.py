@@ -1,7 +1,7 @@
 import sys
 import os
 
-FILENAME = "hole4" # do not include extension or path
+FILENAME = "hole6" # do not include extension or path
 
 PREPROCESSED_DIR = './preprocessed/'
 START_END_SUFFIX = 'var_start_end_table'
@@ -63,7 +63,7 @@ def convert_mif(sat_problem_name):
     return new_text
 
 def get_var_count(sat_problem_name):
-    file = open(f"sat_problems/{sat_problem_name}.cnf", 'r')
+    file = open(f"reduced/{sat_problem_name}.cnf", 'r')
     for line in file:
         line = line.split()
         if line and line[0] == 'p':
