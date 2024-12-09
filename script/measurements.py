@@ -1,21 +1,21 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 # x: num devices, y: cycles
 # histogram of data
 
 file = open("old_combined_output.txt", 'r')
 num_samples = 1500
+numbers_str = ['TWO', 'FOUR', 'EIGHT', 'SIXTEEN']
+numbers = [1, 2, 4, 8, 16]
 
 def sample_and_plot():
 
     data = []
     device_pair = []
     avgs = []
-    
-    numbers_str = ['TWO', 'FOUR', 'EIGHT', 'SIXTEEN']
-    numbers = [2, 4, 8, 16]
     
     # Reading data from file
     for line in file:
@@ -49,6 +49,28 @@ def sample_and_plot():
 
     return avgs
 
+uf50_03 = [32735.02667, 15907.94667, 9104.209333, 5448.092667, 3810.757333]
+hole6 = [399750.78, 351436.8847, 323818.2707, 302189.9253, 284641.282]
+uf50_88 = [48454.49333, 26991.39, 15028.57867, 9059.704667, 5816.762]
+
+def plot_data(data, test_name):
+    _, ax = plt.subplots()
+    ax.plot(numbers, data)
+    plt.xscale("log")
+    ax.set_xlim(1, 16)
+    ylim = 40_000 if test_name == 'uf50_03' else None
+    # ax.set_ylim(0, ylim)
+    ax.xaxis.set_major_formatter(mticker.ScalarFormatter())
+    plt.minorticks_off()
+    # plt.ticklabel_format(style='plain')
+    plt.xticks(numbers)
+    plt.xlabel('Number of Devices')
+    plt.ylabel('Cycles')
+    plt.grid()
+    plt.title(f'Average Execution Times on {test_name}.cnf')
+    plt.show()
+
 if __name__ == '__main__':
-    y = sample_and_plot()
-    print(y)
+    # y = sample_and_plot()
+    # print(y)
+    plot_data(hole6, 'hole6')
